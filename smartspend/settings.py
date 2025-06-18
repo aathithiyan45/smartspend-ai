@@ -53,6 +53,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'smartspend.urls'
 
+import os
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -60,13 +61,16 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',  # ✅ needed
+                'django.contrib.auth.context_processors.auth',  # ✅ needed
+                'django.contrib.messages.context_processors.messages',  # ✅ needed
             ],
         },
     },
 ]
+
+
 
 WSGI_APPLICATION = 'smartspend.wsgi.application'
 

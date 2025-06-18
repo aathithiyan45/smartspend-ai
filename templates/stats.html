@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">📊 Expense Statistics</h2>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <!-- Total Spent -->
+  <div class="bg-indigo-100 p-5 rounded-xl shadow">
+    <h3 class="text-lg font-semibold text-gray-800">💸 Total Spent</h3>
+    <p class="text-3xl font-bold mt-2 text-indigo-700">₹{{ total }}</p>
+  </div>
+
+  <!-- Category Summary -->
+  <div class="bg-green-100 p-5 rounded-xl shadow">
+    <h3 class="text-lg font-semibold text-gray-800">📁 Category Breakdown</h3>
+    <ul class="mt-3 space-y-1 text-sm">
+      {% for cat in categories %}
+        <li>{{ cat.category }}: ₹{{ cat.total }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Monthly Summary -->
+  <div class="bg-yellow-100 p-5 rounded-xl shadow">
+    <h3 class="text-lg font-semibold text-gray-800">📆 Monthly Overview</h3>
+    <ul class="mt-3 space-y-1 text-sm">
+      {% for month in monthly %}
+        <li>{{ month.month|date:"F Y" }}: ₹{{ month.total }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <!-- Category Chart -->
+  <div class="bg-white p-6 shadow-lg rounded-xl">
+    <h3 class="text-center font-semibold mb-3">💼 Category-wise Spending</h3>
+    <canvas id="categoryChart" class="w-full h-64"></canvas>
+  </div>
+
+  <!-- Monthly Bar Chart -->
+  <div class="bg-white p-6 shadow-lg rounded-xl">
+    <h3 class="text-center font-semibold mb-3">📅 Monthly Spending</h3>
+    <canvas id="monthlyChart" class="w-full h-64"></canvas>
+  </div>
+
+  <!-- Trend Line Chart -->
+  <div class="col-span-1 md:col-span-2 bg-white p-6 shadow-lg rounded-xl mt-8">
+    <h3 class="text-center font-semibold mb-3">📈 Expense Trend Over Time</h3>
+    <canvas id="trendChart" class="w-full h-64"></canvas>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const categoryLabels = {{ category_labels|safe }};
+  const categoryTotals = {{ category_totals|safe }};
+  const monthLabels = {{ month_labels|safe }};
+  const monthTotals = {{ month_totals|safe }};
+  const trendLabels = {{ trend_labels|safe }};
+  const trendTotals = {{ trend_totals|safe }};
+
+  // Pie Chart - Category Spending
+  new Chart(document.getElementById("categoryChart"), {
+    type: 'pie',
+    data: {
+      labels: categoryLabels,
+      datasets: [{
+        data: categoryTotals,
+        backgroundColor: [
+          "#6366F1", "#F59E0B", "#10B981", "#EF4444", "#3B82F6",
+          "#8B5CF6", "#EC4899", "#FBBF24", "#22D3EE", "#14B8A6"
+        ],
+        borderColor: "#fff",
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // Bar Chart - Monthly Spending
+  new Chart(document.getElementById("monthlyChart"), {
+    type: 'bar',
+    data: {
+      labels: monthLabels,
+      datasets: [{
+        label: "Monthly Spending",
+        data: monthTotals,
+        backgroundColor: "#60A5FA"
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Line Chart - Expense Trend
+  new Chart(document.getElementById("trendChart"), {
+    type: 'line',
+    data: {
+      labels: trendLabels,
+      datasets: [{
+        label: "Daily Spending Trend",
+        data: trendTotals,
+        fill: false,
+        borderColor: "#10B981",
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true },
+        x: { title: { display: true, text: "Date" } }
+      },
+      plugins: {
+        legend: { display: true, position: 'top' }
+      }
+    }
+  });
+</script>
+{% endblock %}

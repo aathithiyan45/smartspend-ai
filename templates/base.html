@@ -1,22 +1,51 @@
+<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>SmartSpend.AI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ✅ TAILWIND CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>SmartSpend.AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="bg-gray-100 text-gray-800">
 
-    <nav class="bg-white p-4 shadow">
-        <h1 class="text-2xl font-bold text-blue-600">SmartSpend.AI</h1>
-    </nav>
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-indigo-700 text-white flex flex-col">
+      <div class="px-6 py-4 text-2xl font-bold border-b border-indigo-500">
+        💸 SmartSpend.AI
+      </div>
+      <nav class="flex-1 px-4 py-6 space-y-4">
+        <a href="{% url 'home' %}" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/' %}bg-indigo-900{% endif %}">
+          🏠 Home
+        </a>
+      
+        <a href="{% url 'add_expense' %}" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/add/' %}bg-indigo-900{% endif %}">
+          ➕ Add Expense
+        </a>
+      
+        <a href="{% url 'stats' %}" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/stats/' %}bg-indigo-900{% endif %}">
+            📊 Stats
+          </a>
+      
+        <a href="#" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/settings/' %}bg-indigo-900{% endif %}">
+          ⚙️ Settings
+        </a>
+      </nav>
+      
+      <div class="p-4 border-t border-indigo-500 text-sm text-center">
+        Made with ❤️ by Aathithiyan
+      </div>
+    </aside>
 
-    <div class="container mx-auto mt-6">
-        {% block content %}
-        {% endblock %}
-    </div>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6">
+      {% block content %}
+      {% endblock %}
+    </main>
+  </div>
 
 </body>
 </html>

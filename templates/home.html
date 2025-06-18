@@ -1,6 +1,65 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2 class="text-xl font-semibold mb-4">Dashboard - Coming Soon!</h2>
-    <p>We’re building SmartSpend.AI 💸</p>
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-2xl font-bold mb-6 text-center">SmartSpend.AI 💸</h2>
+
+    <!-- 🔍 Filter Form -->
+    <form method="get" class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <div>
+        <label class="block text-sm font-semibold mb-1">From</label>
+        <input type="date" name="start" value="{{ start }}" class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1">To</label>
+        <input type="date" name="end" value="{{ end }}" class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Filter</button>
+      </div>
+      <div>
+        <a href="{% url 'home' %}" class="w-full inline-block text-center bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition">Clear</a>
+      </div>
+    </form>
+
+    <!-- ➕ Add Expense -->
+    <div class="mb-4 text-right">
+      <a href="{% url 'add_expense' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        + Add Expense
+      </a>
+    </div>
+
+    {% if expenses %}
+      <!-- 📋 Expenses Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto border border-gray-300 rounded-md shadow-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-2 text-left border-b">Title</th>
+              <th class="px-4 py-2 text-left border-b">Amount</th>
+              <th class="px-4 py-2 text-left border-b">Category</th>
+              <th class="px-4 py-2 text-left border-b">Date</th>
+              <th class="px-4 py-2 text-left border-b">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for expense in expenses %}
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 border-b">{{ expense.title }}</td>
+                <td class="px-4 py-2 border-b">₹{{ expense.amount }}</td>
+                <td class="px-4 py-2 border-b">{{ expense.category }}</td>
+                <td class="px-4 py-2 border-b">{{ expense.date }}</td>
+                <td class="px-4 py-2 border-b">
+                  <a href="{% url 'edit_expense' expense.id %}" class="text-blue-600 hover:underline mr-2">Edit</a>
+                  <a href="{% url 'delete_expense' expense.id %}" class="text-red-600 hover:underline">Delete</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mt-6 text-center text-gray-500">No expenses found. Try adjusting the filter or <a href="{% url 'add_expense' %}" class="text-blue-600 underline">add a new one</a>.</p>
+    {% endif %}
+  </div>
 {% endblock %}
