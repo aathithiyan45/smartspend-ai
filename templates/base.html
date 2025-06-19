@@ -2,50 +2,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SmartSpend.AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>SpendAI - Smart Financial Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Custom animations and styles */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .sidebar-item {
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+    
+    .sidebar-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      transform: scaleY(0);
+      transition: transform 0.3s ease;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .sidebar-item:hover::before,
+    .sidebar-item.active::before {
+      transform: scaleY(1);
+    }
+    
+    .sidebar-item:hover {
+      background: rgba(16, 185, 129, 0.1);
+      transform: translateX(8px);
+    }
+    
+    .sidebar-item.active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
+      transform: translateX(8px);
+    }
+    
+    .sidebar-item i {
+      transition: all 0.3s ease;
+    }
+    
+    .sidebar-item:hover i {
+      transform: scale(1.1);
+      color: #10b981;
+    }
+    
+    .sidebar-item.active i {
+      color: #10b981;
+    }
+    
+    .logo-gradient {
+      background: linear-gradient(135deg, #10b981, #059669, #047857);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .floating-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .user-avatar {
+      background: linear-gradient(135deg, #10b981, #059669);
+      transition: all 0.3s ease;
+    }
+    
+    .user-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    .logout-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .logout-btn:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+    
+    .nav-divider {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      height: 1px;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
 
-  <div class="flex h-screen">
+<body class="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-gray-800 min-h-screen">
+  <div class="flex h-screen relative">
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-white rounded-full p-3 shadow-lg">
+      <i class="fas fa-bars text-gray-700"></i>
+    </button>
+    
     <!-- Sidebar -->
-    <aside class="w-64 bg-indigo-700 text-white flex flex-col">
-      <div class="px-6 py-4 text-2xl font-bold border-b border-indigo-500">
-        💸 SmartSpend.AI
+    <aside id="sidebar" class="sidebar w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col shadow-2xl relative overflow-hidden">
+      <!-- Background decoration -->
+      <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10"></div>
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full -translate-y-16 translate-x-16"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/20 to-blue-400/20 rounded-full translate-y-12 -translate-x-12"></div>
+      
+      <!-- Logo Section -->
+      <div class="relative px-6 py-6 border-b border-white/10">
+        <div class="flex items-center space-x-3 floating-animation">
+          <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="fas fa-chart-line text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold logo-gradient">SpendAI</h1>
+            <p class="text-xs text-gray-400 font-medium">Smart Financial Hub</p>
+          </div>
+        </div>
       </div>
-      <nav class="flex-1 px-4 py-6 space-y-4">
-        <a href="{% url 'home' %}" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/' %}bg-indigo-900{% endif %}">
-          🏠 Home
-        </a>
       
-        <a href="{% url 'add_expense' %}" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/add/' %}bg-indigo-900{% endif %}">
-          ➕ Add Expense
+      <!-- Navigation -->
+      <nav class="flex-1 px-4 py-6 space-y-3 relative">
+        <a href="{% url 'home' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/' %}active{% endif %}">
+          <i class="fas fa-home text-lg w-5"></i>
+          <span class="font-medium">Dashboard</span>
         </a>
-      
-        <a href="{% url 'stats' %}" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/stats/' %}bg-indigo-900{% endif %}">
-            📊 Stats
+        
+        <a href="{% url 'add_expense' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/add/' %}active{% endif %}">
+          <i class="fas fa-plus-circle text-lg w-5"></i>
+          <span class="font-medium">Add Expense</span>
+        </a>
+        
+        <a href="{% url 'budget_goals' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/budget-goals/' %}active{% endif %}">
+          <i class="fas fa-bullseye text-lg w-5"></i>
+          <span class="font-medium">Budget & Goals</span>
+        </a>
+        
+        <a href="{% url 'stats' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/stats/' %}active{% endif %}">
+          <i class="fas fa-chart-bar text-lg w-5"></i>
+          <span class="font-medium">Analytics</span>
+        </a>
+        
+        <!-- Divider -->
+        <div class="nav-divider my-6"></div>
+        
+        <!-- Auth Section -->
+        {% if user.is_authenticated %}
+          <!-- User Profile -->
+          <div class="glass-effect rounded-xl p-4 mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="user-avatar w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
+                {{ user.username|first|upper }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-white truncate">{{ user.username }}</p>
+                <p class="text-xs text-gray-400">Premium User</p>
+              </div>
+            </div>
+          </div>
+          
+          <a href="{% url 'profile' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
+            <i class="fas fa-user-circle text-lg w-5"></i>
+            <span class="font-medium">Profile Settings</span>
           </a>
-      
-        <a href="#" class="block py-2 px-3 rounded hover:bg-indigo-600 {% if request.path == '/settings/' %}bg-indigo-900{% endif %}">
-          ⚙️ Settings
-        </a>
+          
+          <form action="{% url 'logout' %}" method="POST" class="mt-4">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn w-full flex items-center space-x-4 py-3 px-4 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30">
+              <i class="fas fa-sign-out-alt text-lg w-5"></i>
+              <span class="font-medium">Sign Out</span>
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
+            <i class="fas fa-sign-in-alt text-lg w-5 text-emerald-400"></i>
+            <span class="font-medium text-emerald-300">Sign In</span>
+          </a>
+          
+          <a href="{% url 'register' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
+            <i class="fas fa-user-plus text-lg w-5"></i>
+            <span class="font-medium">Create Account</span>
+          </a>
+        {% endif %}
       </nav>
       
-      <div class="p-4 border-t border-indigo-500 text-sm text-center">
-        Made with ❤️ by Aathithiyan
+      <!-- Footer -->
+      <div class="relative p-4 border-t border-white/10">
+        <div class="text-center">
+          <p class="text-xs text-gray-400 mb-1">Crafted with</p>
+          <div class="flex items-center justify-center space-x-1">
+            <i class="fas fa-heart text-red-400 text-xs animate-pulse"></i>
+            <span class="text-xs text-gray-300 font-medium">by Aathithiyan</span>
+          </div>
+        </div>
       </div>
     </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-6">
-      {% block content %}
-      {% endblock %}
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative">
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 bg-gradient-to-br from-white/50 to-slate-100/50"></div>
+      <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(16,185,129,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
+      
+      <!-- Content -->
+      <div class="relative z-10 p-6 md:p-8 fade-in">
+        {% block content %}
+        <!-- Your page content will go here -->
+        <div class="max-w-7xl mx-auto">
+          <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome to SpendAI</h1>
+            <p class="text-gray-600">Your intelligent financial companion for smarter spending decisions.</p>
+          </div>
+        </div>
+        {% endblock %}
+      </div>
     </main>
   </div>
-
+  
+  <!-- Mobile Menu Script -->
+  <script>
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('mobile-open');
+    });
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+  </script>
 </body>
 </html>

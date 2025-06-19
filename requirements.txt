@@ -3,6 +3,7 @@ Django==5.2.3
 joblib==1.5.1
 numpy==2.3.0
 pandas==2.3.0
+pillow==11.2.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
 scikit-learn==1.7.0
