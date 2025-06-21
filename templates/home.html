@@ -22,6 +22,29 @@
         SmartSpend.AI Dashboard
       </h1>
     </div>
+    <!-- Smart Budget Analyzer -->
+<div class="mb-6 flex-shrink-0">
+  <div class="backdrop-blur-md bg-gradient-to-r from-emerald-100 to-emerald-50 border border-white/20 rounded-2xl p-6 shadow-xl">
+    <h2 class="text-xl font-semibold text-emerald-700 mb-2">💡 Smart Budget Analyzer</h2>
+
+    <!-- Trend Message -->
+    {% if trend_message %}
+      <p class="text-gray-800 text-sm mb-2">{{ trend_message }}</p>
+    {% endif %}
+
+    <!-- Budget Feedback Tips -->
+    {% if budget_feedback %}
+      <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+        {% for feedback in budget_feedback %}
+          <li>{{ feedback }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-sm text-gray-500">✅ All budgets are on track!</p>
+    {% endif %}
+  </div>
+</div>
+
 
     <!-- Date Filter -->
     <div class="mb-6 flex-shrink-0">

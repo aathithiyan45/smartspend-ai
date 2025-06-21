@@ -27,13 +27,13 @@
   
   {% if latest_month_label %}
     <p class="text-base mt-3">
-      <strong>Latest:</strong> {{ latest_month_label }} — ₹{{ latest_month_total }}
+      <strong>Latest:</strong> {{ latest_month_label }} — ₹{{ latest_month_total|floatformat:2 }}
     </p>
 
     <p class="text-sm text-gray-700 mt-4 font-semibold">🔝 Top 3 Spending Months:</p>
     <ul class="mt-2 space-y-1 text-sm">
       {% for label, total in top3_months %}
-        <li>{{ label }}: ₹{{ total }}</li>
+        <li>{{ label }}: ₹{{ total|floatformat:2 }}</li>
       {% endfor %}
     </ul>
   {% else %}
@@ -42,6 +42,47 @@
 </div>
 
 </div>
+<!-- 📅 Future Expense Prediction -->
+<div class="mt-8 p-6 rounded-xl shadow bg-gradient-to-br from-white via-blue-50 to-blue-100">
+  <h2 class="text-xl font-semibold text-blue-700 mb-3">📅 Next Month Predictions</h2>
+
+  {% if future_predictions %}
+    <ul class="space-y-1 text-gray-800 text-sm">
+      {% for category, amount in future_predictions.items %}
+        <li>🔮 You may spend <strong>₹{{ amount }}</strong> on <strong>{{ category }}</strong> next month.</li>
+      {% endfor %}
+    </ul>
+
+    <canvas id="futureChart" class="mt-5"></canvas>
+    <script>
+      const futureData = {{ future_predictions|safe }};
+      const ctxFuture = document.getElementById("futureChart").getContext("2d");
+
+      new Chart(ctxFuture, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(futureData),
+          datasets: [{
+            label: 'Predicted Spending (₹)',
+            data: Object.values(futureData),
+            backgroundColor: '#60a5fa',
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    </script>
+  {% else %}
+    <p class="text-gray-500 text-sm">Not enough data to predict future spending.</p>
+  {% endif %}
+</div>
+
 
 <!-- Charts Section -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
