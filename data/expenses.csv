@@ -1,26 +1,118 @@
 title,category
-bought rice,Groceries
-paid light bill,Utilities
-went to movie,Entertainment
-ordered biryani,Food
-monthly gym fee,Fitness
-online course payment,Education
-bought vegetables,Groceries
-electricity bill,Utilities
-watched movie at cinema,Entertainment
-dinner at KFC,Food
-internet recharge,Utilities
-bought protein powder,Fitness
-paid college fees,Education
-purchased fruits,Groceries
-power bill paid,Utilities
-Netflix subscription,Entertainment
-Zomato food order,Food
-gym membership renewal,Fitness
-online python course,Education
-supermarket shopping,Groceries
-paid water bill,Utilities
-movie ticket purchase,Entertainment
-ordered pizza,Food
-paid for yoga class,Fitness
-online learning platform,Education
+bought rice,food
+paid light bill,utilities
+went to movie,entertainment
+ordered biryani,food
+monthly gym fee,healthcare
+online course payment,education
+bus ticket,transport
+grocery shopping,food
+electricity bill,utilities
+doctor appointment fees,healthcare
+bought new shoes,shopping
+movie subscription,entertainment
+paid college fees,education
+taxi fare,transport
+bought laptop,shopping
+hospital bill,healthcare
+internet recharge,utilities
+dinner at KFC,food
+flight ticket booking,transport
+Netflix subscription,entertainment
+pharmacy purchase,healthcare
+online python course,education
+clothes shopping,shopping
+water bill payment,utilities
+food delivery (Zomato),food
+train ticket,transport
+fitness class fee,healthcare
+textbooks purchase,education
+birthday gift shopping,shopping
+concert tickets,entertainment
+taxi ride,transport
+lunch at cafe,food
+hospital medicines,healthcare
+software subscription,entertainment
+school fees,education
+shopping mall purchase,shopping
+paid for yoga class,healthcare
+coffee shop,food
+car repair,transport
+gym equipment,healthcare
+bus pass,transport
+movie tickets,entertainment
+paid electricity bill,utilities
+online learning platform,education
+supermarket shopping,food
+medical checkup,healthcare
+birthday gift,shopping
+mobile recharge,utilities
+paid water bill,utilities
+dinner at restaurant,food
+train fare,transport
+bought fruits,food
+paid parking fee,transport
+online magazine subscription,entertainment
+ordered sushi,food
+visited dentist,healthcare
+college library fee,education
+bought handbag,shopping
+paid gas bill,utilities
+watched football match,entertainment
+bike repair,transport
+paid insurance premium,utilities
+bought cosmetics,shopping
+subscribed to e-learning,education
+ordered cake,food
+bus fare,transport
+fitness trainer fee,healthcare
+movie DVD purchase,entertainment
+paid tuition fees,education
+bought electronics,shopping
+paid water tax,utilities
+attended workshop,education
+coffee beans purchase,food
+car fuel,transport
+paid hospital fees,healthcare
+bought gifts,shopping
+paid mobile bill,utilities
+watched theatre play,entertainment
+bought snacks,food
+paid toll fee,transport
+bought vitamins,healthcare
+paid exam fees,education
+visited spa,healthcare
+bought sportswear,shopping
+paid broadband bill,utilities
+attended online seminar,education
+dined at pizza place,food
+taxi booking,transport
+paid lab fees,education
+bought pet supplies,shopping
+paid water maintenance,utilities
+watched online concert,entertainment
+ordered coffee,food
+bus ticket renewal,transport
+paid ambulance charges,healthcare
+bought books,education
+purchased furniture,shopping
+paid electricity surcharge,utilities
+visited clinic,healthcare
+paid coaching fees,education
+bought perfume,shopping
+paid phone recharge,utilities
+watched documentary,entertainment
+ordered pasta,food
+bike rental,transport
+bought supplements,healthcare
+attended conference,education
+bought electronics accessories,shopping
+paid cable TV bill,utilities
+went to amusement park,entertainment
+ordered salad,food
+paid airport parking,transport
+visited eye specialist,healthcare
+paid school bus fee,education
+bought shoes,shopping
+paid sewage bill,utilities
+watched stand-up comedy,entertainment

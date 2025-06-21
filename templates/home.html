@@ -150,8 +150,21 @@
                 <td class="px-6 py-4 text-sm text-gray-700 max-w-xs truncate">{{ expense.notes|default:"—" }}</td>
                 <td class="px-6 py-4 text-sm">
                   <div class="flex space-x-2">
-                    <button class="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs hover:bg-blue-600 transition-colors">Edit</button>
-                    <button class="px-3 py-1 bg-red-500 text-white rounded-lg text-xs hover:bg-red-600 transition-colors">Delete</button>
+                    <!-- Edit Button -->
+<a href="{% url 'edit_expense' expense.id %}" 
+class="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs hover:bg-blue-600 transition-colors">
+Edit
+</a>
+
+<!-- Delete Button -->
+<form method="POST" action="{% url 'delete_expense' expense.id %}" onsubmit="return confirm('Are you sure you want to delete this expense?');">
+{% csrf_token %}
+<button type="submit"
+  class="px-3 py-1 bg-red-500 text-white rounded-lg text-xs hover:bg-red-600 transition-colors">
+  Delete
+</button>
+</form>
+
                   </div>
                 </td>
               </tr>

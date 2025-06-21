@@ -20,32 +20,35 @@ class ExpenseForm(forms.ModelForm):
         super(ExpenseForm, self).__init__(*args, **kwargs)
         self.fields['date'].initial = date.today()
 
+from django import forms
+from .models import CategoryBudget, SavingGoal
+from datetime import date
 
 class CategoryBudgetForm(forms.ModelForm):
     class Meta:
         model = CategoryBudget
         fields = ['category', 'monthly_limit', 'month']
         widgets = {
-            'category': forms.Select(attrs={'class': 'form-select w-full p-2 border border-gray-300 rounded'}),
-            'monthly_limit': forms.NumberInput(attrs={'class': 'form-input w-full p-2 border border-gray-300 rounded', 'placeholder': 'Set monthly limit'}),
-            'month': forms.DateInput(attrs={'type': 'date', 'class': 'form-input w-full p-2 border border-gray-300 rounded'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'monthly_limit': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Set monthly limit'}),
+            'month': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
         }
 
     def __init__(self, *args, **kwargs):
-        super(CategoryBudgetForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['month'].initial = date.today().replace(day=1)
-
 
 class SavingGoalForm(forms.ModelForm):
     class Meta:
         model = SavingGoal
-        fields = ['goal_name', 'target_amount', 'deadline']
+        fields = ['goal_name', 'target_amount', 'current_amount', 'deadline']
         widgets = {
-            'goal_name': forms.TextInput(attrs={'class': 'form-input w-full p-2 border border-gray-300 rounded', 'placeholder': 'e.g. Buy Laptop'}),
-            'target_amount': forms.NumberInput(attrs={'class': 'form-input w-full p-2 border border-gray-300 rounded', 'placeholder': 'Target ₹ amount'}),
-            'deadline': forms.DateInput(attrs={'type': 'date', 'class': 'form-input w-full p-2 border border-gray-300 rounded'}),
+            'goal_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Goal name'}),
+            'target_amount': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Target amount'}),
+            'current_amount': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Current amount (optional)'}),
+            'deadline': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
         }
 
     def __init__(self, *args, **kwargs):
-        super(SavingGoalForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['deadline'].initial = date.today()

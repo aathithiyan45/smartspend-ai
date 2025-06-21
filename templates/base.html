@@ -1,4 +1,3 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,126 +8,103 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* Custom animations and styles */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    * {
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .sidebar-item {
-      position: relative;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      overflow: hidden;
-    }
-    
+    * { font-family: 'Inter', sans-serif; }
+    .sidebar-item { position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
     .sidebar-item::before {
       content: '';
       position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 4px;
+      left: 0; top: 0; height: 100%; width: 4px;
       background: linear-gradient(135deg, #10b981, #059669);
       transform: scaleY(0);
       transition: transform 0.3s ease;
       border-radius: 0 4px 4px 0;
     }
-    
-    .sidebar-item:hover::before,
-    .sidebar-item.active::before {
-      transform: scaleY(1);
-    }
-    
+    .sidebar-item:hover::before, .sidebar-item.active::before { transform: scaleY(1); }
     .sidebar-item:hover {
       background: rgba(16, 185, 129, 0.1);
       transform: translateX(8px);
     }
-    
     .sidebar-item.active {
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
       transform: translateX(8px);
     }
-    
-    .sidebar-item i {
-      transition: all 0.3s ease;
-    }
-    
-    .sidebar-item:hover i {
-      transform: scale(1.1);
-      color: #10b981;
-    }
-    
-    .sidebar-item.active i {
-      color: #10b981;
-    }
-    
+    .sidebar-item i { transition: all 0.3s ease; }
+    .sidebar-item:hover i { transform: scale(1.1); color: #10b981; }
+    .sidebar-item.active i { color: #10b981; }
     .logo-gradient {
       background: linear-gradient(135deg, #10b981, #059669, #047857);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    
     .glass-effect {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
     .floating-animation {
       animation: float 6s ease-in-out infinite;
     }
-    
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
     }
-    
     .fade-in {
       animation: fadeIn 0.6s ease-out;
     }
-    
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
     .user-avatar {
       background: linear-gradient(135deg, #10b981, #059669);
       transition: all 0.3s ease;
     }
-    
     .user-avatar:hover {
       transform: scale(1.05);
       box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
     }
-    
-    .logout-btn {
-      transition: all 0.3s ease;
-    }
-    
+    .logout-btn { transition: all 0.3s ease; }
     .logout-btn:hover {
       background: linear-gradient(135deg, #ef4444, #dc2626);
       transform: translateY(-2px);
       box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     }
-    
     .nav-divider {
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       height: 1px;
     }
-    
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
+    /* Responsive Sidebar */
+    @media (max-width: 1024px) {
       .sidebar {
+        position: fixed;
+        z-index: 50;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 80vw;
+        max-width: 320px;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
       }
-      
       .sidebar.mobile-open {
         transform: translateX(0);
       }
+      .sidebar-backdrop {
+        display: block;
+      }
+    }
+    @media (min-width: 1025px) {
+      .sidebar-backdrop { display: none !important; }
+    }
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 40;
+      display: none;
+      transition: opacity 0.3s;
     }
   </style>
 </head>
@@ -136,17 +112,17 @@
 <body class="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-gray-800 min-h-screen">
   <div class="flex h-screen relative">
     <!-- Mobile Menu Button -->
-    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-white rounded-full p-3 shadow-lg">
+    <button id="mobile-menu-btn" aria-label="Open Menu" class="md:hidden fixed top-4 left-4 z-50 bg-white rounded-full p-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400">
       <i class="fas fa-bars text-gray-700"></i>
     </button>
-    
+    <!-- Mobile overlay -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
     <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col shadow-2xl relative overflow-hidden">
+    <aside id="sidebar" class="sidebar w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col shadow-2xl relative overflow-hidden lg:static">
       <!-- Background decoration -->
-      <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10"></div>
-      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full -translate-y-16 translate-x-16"></div>
-      <div class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/20 to-blue-400/20 rounded-full translate-y-12 -translate-x-12"></div>
-      
+      <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 pointer-events-none"></div>
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/20 to-blue-400/20 rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
       <!-- Logo Section -->
       <div class="relative px-6 py-6 border-b border-white/10">
         <div class="flex items-center space-x-3 floating-animation">
@@ -159,32 +135,26 @@
           </div>
         </div>
       </div>
-      
       <!-- Navigation -->
       <nav class="flex-1 px-4 py-6 space-y-3 relative">
         <a href="{% url 'home' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/' %}active{% endif %}">
           <i class="fas fa-home text-lg w-5"></i>
           <span class="font-medium">Dashboard</span>
         </a>
-        
         <a href="{% url 'add_expense' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/add/' %}active{% endif %}">
           <i class="fas fa-plus-circle text-lg w-5"></i>
           <span class="font-medium">Add Expense</span>
         </a>
-        
         <a href="{% url 'budget_goals' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/budget-goals/' %}active{% endif %}">
           <i class="fas fa-bullseye text-lg w-5"></i>
           <span class="font-medium">Budget & Goals</span>
         </a>
-        
         <a href="{% url 'stats' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/stats/' %}active{% endif %}">
           <i class="fas fa-chart-bar text-lg w-5"></i>
           <span class="font-medium">Analytics</span>
         </a>
-        
         <!-- Divider -->
         <div class="nav-divider my-6"></div>
-        
         <!-- Auth Section -->
         {% if user.is_authenticated %}
           <!-- User Profile -->
@@ -199,12 +169,10 @@
               </div>
             </div>
           </div>
-          
           <a href="{% url 'profile' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
             <i class="fas fa-user-circle text-lg w-5"></i>
             <span class="font-medium">Profile Settings</span>
           </a>
-          
           <form action="{% url 'logout' %}" method="POST" class="mt-4">
             {% csrf_token %}
             <button type="submit" class="logout-btn w-full flex items-center space-x-4 py-3 px-4 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30">
@@ -217,14 +185,12 @@
             <i class="fas fa-sign-in-alt text-lg w-5 text-emerald-400"></i>
             <span class="font-medium text-emerald-300">Sign In</span>
           </a>
-          
           <a href="{% url 'register' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
             <i class="fas fa-user-plus text-lg w-5"></i>
             <span class="font-medium">Create Account</span>
           </a>
         {% endif %}
       </nav>
-      
       <!-- Footer -->
       <div class="relative p-4 border-t border-white/10">
         <div class="text-center">
@@ -236,42 +202,68 @@
         </div>
       </div>
     </aside>
-    
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto relative">
+    <main class="flex-1 overflow-y-auto relative min-h-screen">
       <!-- Background Pattern -->
       <div class="absolute inset-0 bg-gradient-to-br from-white/50 to-slate-100/50"></div>
-      <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(16,185,129,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
-      
+      <div class="absolute inset-0 pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, rgba(16,185,129,0.08) 1px, transparent 0); background-size: 22px 22px;"></div>
       <!-- Content -->
-      <div class="relative z-10 p-6 md:p-8 fade-in">
+      <div class="relative z-10 p-4 sm:p-6 md:p-8 fade-in">
         {% block content %}
-        <!-- Your page content will go here -->
-        <div class="max-w-7xl mx-auto">
-          <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome to SpendAI</h1>
-            <p class="text-gray-600">Your intelligent financial companion for smarter spending decisions.</p>
+        <!-- Default Welcome Content -->
+        <div class="max-w-5xl mx-auto">
+          <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 flex flex-col md:flex-row items-center gap-8">
+            <div class="flex-1">
+              <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Welcome to <span class="logo-gradient">SpendAI</span></h1>
+              <p class="text-gray-600 text-lg mb-4">Your intelligent financial companion for smarter spending decisions.</p>
+              <ul class="list-none space-y-2">
+                <li class="flex items-center gap-2 text-emerald-700"><i class="fas fa-check-circle"></i> AI-powered expense analytics</li>
+                <li class="flex items-center gap-2 text-emerald-700"><i class="fas fa-check-circle"></i> Smart budgeting and goal setting</li>
+                <li class="flex items-center gap-2 text-emerald-700"><i class="fas fa-check-circle"></i> Personalized financial insights</li>
+              </ul>
+            </div>
+            <div class="w-48 h-48 flex-shrink-0 mx-auto md:mx-0 floating-animation hidden sm:flex items-center justify-center">
+              <img src="https://illustrations.popsy.co/amber/finance.svg" alt="Finance illustration" class="w-full h-full object-contain">
+            </div>
           </div>
         </div>
         {% endblock %}
       </div>
     </main>
   </div>
-  
   <!-- Mobile Menu Script -->
   <script>
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.getElementById('sidebar');
-    
-    mobileMenuBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('mobile-open');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    function openSidebar() {
+      sidebar.classList.add('mobile-open');
+      sidebarBackdrop.style.display = 'block';
+      setTimeout(() => sidebarBackdrop.style.opacity = '1', 10);
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('mobile-open');
+      sidebarBackdrop.style.opacity = '0';
+      setTimeout(() => sidebarBackdrop.style.display = 'none', 300);
+      document.body.style.overflow = '';
+    }
+    mobileMenuBtn && mobileMenuBtn.addEventListener('click', openSidebar);
+    sidebarBackdrop && sidebarBackdrop.addEventListener('click', closeSidebar);
+
+    // Prevent sidebar closing when clicking inside sidebar
+    sidebar && sidebar.addEventListener('click', (e) => {
+      if (window.innerWidth <= 1024 && e.target === sidebar) closeSidebar();
     });
-    
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-        sidebar.classList.remove('mobile-open');
+    // Accessibility: close menu with Escape
+    document.addEventListener('keydown', (e) => {
+      if (window.innerWidth <= 1024 && sidebar.classList.contains('mobile-open') && e.key === 'Escape') {
+        closeSidebar();
       }
+    });
+    // Auto close sidebar on resize >1024px
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1024) closeSidebar();
     });
   </script>
 </body>

@@ -3,14 +3,14 @@
 <div class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto mt-10">
   <h2 class="text-2xl font-semibold text-center mb-4">👤 Your Profile</h2>
 
-  {% if profile.profile_picture %}
+  {% if profile.avatar %}
     <div class="flex justify-center mb-4">
-      <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="w-24 h-24 rounded-full object-cover">
+      <img src="{{ profile.avatar.url }}" alt="Profile Picture" class="w-24 h-24 rounded-full object-cover">
     </div>
   {% endif %}
 
   <p><strong>Username:</strong> {{ profile.user.username }}</p>
-  <p><strong>Full Name:</strong> {{ profile.full_name }}</p>
+  <p><strong>Full Name:</strong> {{ profile.user.first_name }} {{ profile.user.last_name }}</p>
   <p><strong>Email:</strong> {{ profile.user.email }}</p>
   <p><strong>Bio:</strong> {{ profile.bio|default:"No bio yet." }}</p>
 
