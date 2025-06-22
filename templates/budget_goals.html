@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load form_tags %}  {# For optional add_class filter support #}
 
 {% block content %}
-<!-- Main Container with Gradient Background -->
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
   <div class="max-w-7xl mx-auto px-6 py-8">
-    
+
     <!-- Page Header -->
     <div class="mb-8">
       <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-green-600 bg-clip-text text-transparent mb-2">
@@ -14,14 +14,12 @@
       <p class="text-gray-600 text-lg">Manage your financial planning and savings targets</p>
     </div>
 
-    <!-- Two-Column Grid Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
       <!-- Left Section: Budget Form -->
       <div class="group">
-        <div class="backdrop-blur-md bg-white/40 border border-white/20 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:bg-white/50">
+        <div class="backdrop-blur-md bg-white/40 border border-white/20 rounded-3xl p-8 shadow-xl">
           
-          <!-- Card Header -->
           <div class="flex items-center mb-6">
             <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-xl mr-4 shadow-lg">
               💰
@@ -32,68 +30,32 @@
             </div>
           </div>
 
-          <!-- Budget Form -->
           <form method="post" class="space-y-6">
             {% csrf_token %}
-            
-            <!-- Category Selection -->
-            <div class="relative">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                📂 Category
-              </label>
-              <div class="relative">
-                <select name="category" 
-                        class="w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all duration-200 appearance-none">
-                  <option value="">Select a category</option>
-                  <option value="food">🍽️ Food & Dining</option>
-                  <option value="transport">🚗 Transportation</option>
-                  <option value="entertainment">🎬 Entertainment</option>
-                  <option value="shopping">🛍️ Shopping</option>
-                  <option value="healthcare">🏥 Healthcare</option>
-                  <option value="utilities">💡 Utilities</option>
-                  <option value="education">📚 Education</option>
-                  <option value="other">📝 Other</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </div>
-              </div>
+            {{ budget_form.non_field_errors }}
+
+            <!-- Category -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">📂 Category</label>
+              {{ budget_form.category|add_class:"w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all duration-200" }}
+              {{ budget_form.category.errors }}
             </div>
 
             <!-- Budget Limit -->
-            <div class="relative">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                💳 Budget Limit (₹)
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span class="text-gray-500 text-lg">₹</span>
-                </div>
-                <input type="number" 
-                       name="limit" 
-                       min="0" 
-                       step="0.01"
-                       placeholder="Enter amount"
-                       class="w-full pl-8 pr-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all duration-200">
-              </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">💳 Budget Limit (₹)</label>
+              {{ budget_form.monthly_limit|add_class:"w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all duration-200" }}
+              {{ budget_form.monthly_limit.errors }}
             </div>
 
-            <!-- Month Selection -->
-            <div class="relative">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                📅 Month
-              </label>
-              <input type="month" 
-                     name="month"
-                     class="w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all duration-200">
+            <!-- Month -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">📅 Month</label>
+              {{ budget_form.month|add_class:"w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all duration-200" }}
+              {{ budget_form.month.errors }}
             </div>
 
-            <!-- Submit Button -->
-            <button type="submit" 
-                    name="submit_budget"
-                    class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:ring-4 focus:ring-indigo-300 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+            <button type="submit" name="submit_budget" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:ring-4 focus:ring-indigo-300 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
               <span class="flex items-center justify-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -107,9 +69,8 @@
 
       <!-- Right Section: Saving Goal Form -->
       <div class="group">
-        <div class="backdrop-blur-md bg-white/40 border border-white/20 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:bg-white/50">
+        <div class="backdrop-blur-md bg-white/40 border border-white/20 rounded-3xl p-8 shadow-xl">
           
-          <!-- Card Header -->
           <div class="flex items-center mb-6">
             <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white text-xl mr-4 shadow-lg">
               🎯
@@ -120,71 +81,39 @@
             </div>
           </div>
 
-          <!-- Saving Goal Form -->
           <form method="post" class="space-y-6">
             {% csrf_token %}
-            
+            {{ goal_form.non_field_errors }}
+
             <!-- Goal Name -->
-            <div class="relative">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                🏷️ Goal Name
-              </label>
-              <input type="text" 
-                     name="goal_name"
-                     placeholder="e.g., Emergency Fund, Vacation, New Car"
-                     class="w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">🏷️ Goal Name</label>
+              {{ goal_form.goal_name|add_class:"w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200" }}
+              {{ goal_form.goal_name.errors }}
             </div>
 
             <!-- Target Amount -->
-            <div class="relative">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                💰 Target Amount (₹)
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span class="text-gray-500 text-lg">₹</span>
-                </div>
-                <input type="number" 
-                       name="target_amount"
-                       min="0" 
-                       step="0.01"
-                       placeholder="Enter target amount"
-                       class="w-full pl-8 pr-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200">
-              </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">💰 Target Amount (₹)</label>
+              {{ goal_form.target_amount|add_class:"w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200" }}
+              {{ goal_form.target_amount.errors }}
+            </div>
+
+            <!-- Current Amount -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">💳 Current Amount (₹) <span class="text-xs text-gray-400">(Optional)</span></label>
+              {{ goal_form.current_amount|add_class:"w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200" }}
+              {{ goal_form.current_amount.errors }}
             </div>
 
             <!-- Deadline -->
-            <div class="relative">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                📆 Target Date
-              </label>
-              <input type="date" 
-                     name="deadline"
-                     class="w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">📆 Deadline</label>
+              {{ goal_form.deadline|add_class:"w-full px-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200" }}
+              {{ goal_form.deadline.errors }}
             </div>
 
-            <!-- Optional: Current Amount -->
-            <div class="relative">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                💳 Current Amount (₹) <span class="text-gray-400 text-xs">Optional</span>
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span class="text-gray-500 text-lg">₹</span>
-                </div>
-                <input type="number" 
-                       name="current_amount"
-                       min="0" 
-                       step="0.01"
-                       placeholder="Amount already saved"
-                       class="w-full pl-8 pr-4 py-3 bg-white/60 border border-white/30 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent backdrop-blur-sm transition-all duration-200">
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" 
-                    name="submit_goal"
-                    class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 focus:ring-4 focus:ring-green-300 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+            <button type="submit" name="submit_goal" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 focus:ring-4 focus:ring-green-300 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
               <span class="flex items-center justify-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -193,53 +122,6 @@
               </span>
             </button>
           </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Success/Error Messages Area -->
-    {% if messages %}
-    <div class="mt-8">
-      {% for message in messages %}
-      <div class="backdrop-blur-md bg-white/40 border border-white/20 rounded-2xl p-4 shadow-lg mb-4
-                  {% if message.tags == 'success' %}border-green-200 bg-green-50/40
-                  {% elif message.tags == 'error' %}border-red-200 bg-red-50/40
-                  {% endif %}">
-        <div class="flex items-center">
-          {% if message.tags == 'success' %}
-          <div class="text-green-600 text-xl mr-3">✅</div>
-          {% elif message.tags == 'error' %}
-          <div class="text-red-600 text-xl mr-3">❌</div>
-          {% endif %}
-          <p class="text-gray-800 font-medium">{{ message }}</p>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Quick Tips Section -->
-    <div class="mt-12 backdrop-blur-md bg-white/30 border border-white/20 rounded-3xl p-6 shadow-lg">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-        <span class="text-2xl mr-2">💡</span>
-        Quick Tips
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-        <div class="flex items-start">
-          <span class="text-indigo-500 mr-2">•</span>
-          <span>Set realistic budget limits based on your past spending patterns</span>
-        </div>
-        <div class="flex items-start">
-          <span class="text-green-500 mr-2">•</span>
-          <span>Break large goals into smaller, achievable milestones</span>
-        </div>
-        <div class="flex items-start">
-          <span class="text-purple-500 mr-2">•</span>
-          <span>Review and adjust your budgets monthly for better accuracy</span>
-        </div>
-        <div class="flex items-start">
-          <span class="text-blue-500 mr-2">•</span>
-          <span>Use the 50/30/20 rule: 50% needs, 30% wants, 20% savings</span>
         </div>
       </div>
     </div>

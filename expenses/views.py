@@ -5,14 +5,12 @@ from django.db.models.functions import TruncMonth
 from datetime import datetime, date, timedelta
 import json
 import calendar
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
 from .models import Expense, CategoryBudget, SavingGoal
 from .forms import ExpenseForm, CategoryBudgetForm, SavingGoalForm
 from ml.model import predict_category
-from sklearn.linear_model import LinearRegression
-import numpy as np
-
-
 
 @login_required
 def home(request):
@@ -33,27 +31,39 @@ def home(request):
     this_month = today.replace(day=1)
     previous_month = (this_month - timedelta(days=1)).replace(day=1)
 
-    # Calculate current and previous month totals
-    current_total = Expense.objects.filter(user=request.user, date__month=this_month.month, date__year=this_month.year).aggregate(Sum('amount'))['amount__sum'] or 0
-    previous_total = Expense.objects.filter(user=request.user, date__month=previous_month.month, date__year=previous_month.year).aggregate(Sum('amount'))['amount__sum'] or 0
+    # Monthly Totals
+    current_total = Expense.objects.filter(
+        user=request.user,
+        date__month=this_month.month,
+        date__year=this_month.year
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
 
-    # Trend percentage
+    previous_total = Expense.objects.filter(
+        user=request.user,
+        date__month=previous_month.month,
+        date__year=previous_month.year
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
+
     if previous_total > 0:
         trend_percent = ((current_total - previous_total) / previous_total) * 100
     else:
-        trend_percent = 0  # Avoid division by zero
+        trend_percent = 0
 
     trend_message = f"📊 This month's spending is {'up' if trend_percent > 0 else 'down'} by {abs(trend_percent):.1f}% compared to last month."
 
     # Budgets
-    budgets = CategoryBudget.objects.filter(user=request.user, month__month=today.month, month__year=today.year)
+    budgets = CategoryBudget.objects.filter(user=request.user).order_by('-month')
 
     category_summary = []
     budget_feedback = []
+    saving_tips = []
 
     for budget in budgets:
         spent = expenses.filter(category__iexact=budget.category).aggregate(total=Sum('amount'))['total'] or 0
-        percent = round((spent / budget.monthly_limit) * 100) if budget.monthly_limit > 0 else 0
+        spent_float = float(spent)
+        limit = float(budget.monthly_limit or 0)
+
+        percent = round((spent_float / limit) * 100) if limit > 0 else 0
 
         if percent >= 100:
             status = "❌ Over Budget"
@@ -67,13 +77,36 @@ def home(request):
 
         category_summary.append({
             "category": budget.category,
-            "limit": budget.monthly_limit,
-            "spent": spent,
+            "limit": limit,
+            "spent": spent_float,
             "percent": percent,
             "status": status
         })
 
+        # 🔥 Personalized Saving Tips
+        if spent_float > limit:
+            excess = spent_float - limit
+            tip = f"🍽️ You overspent ₹{excess:.0f} in '{budget.category}'. Try reducing it by 20% to save ₹{(spent_float * 0.2):.0f}/month."
+            saving_tips.append(tip)
+        elif spent_float >= 0.8 * limit:
+            tip = f"⚠️ '{budget.category}' spending is almost full. Try cutting 10% to save ₹{(spent_float * 0.1):.0f}."
+            saving_tips.append(tip)
+
+    # Saving Goals
     goals = SavingGoal.objects.filter(user=request.user)
+
+    for goal in goals:
+        saved = float(goal.current_amount or 0)
+        target = float(goal.target_amount or 1)
+        goal.progress_percent = round((saved / target) * 100)
+
+        remaining = float(goal.target_amount) - float(goal.current_amount or 0)
+        days_left = (goal.deadline - today).days
+        if remaining > 0 and days_left > 0:
+            per_day = remaining / days_left
+            saving_tips.append(
+                f"🏦 To reach '{goal.goal_name}', save ₹{per_day:.0f}/day for {days_left} more days."
+            )
 
     context = {
         'expenses': expenses,
@@ -83,10 +116,10 @@ def home(request):
         'goals': goals,
         'trend_message': trend_message,
         'budget_feedback': budget_feedback,
+        'saving_tips': saving_tips,
     }
 
     return render(request, 'home.html', context)
-
 
 @login_required
 def add_expense(request):
@@ -175,7 +208,8 @@ def stats(request):
         )
 
         if len(monthly_cat_data) >= 2:
-            X = np.array(range(len(monthly_cat_data))).reshape(-1, 1)
+            X = np.array([entry['month'].month for entry in monthly_cat_data]).reshape(-1, 1)
+
             y = np.array([float(entry['total']) for entry in monthly_cat_data])
             model = LinearRegression()
             model.fit(X, y)
@@ -221,6 +255,7 @@ def budget_goals(request):
                 budget.month = date.today().replace(day=1)
 
             budget.save()
+            print(f"✅ Saved budget: {budget.category} | Month: {budget.month} | User: {budget.user}")
             return redirect('budget_goals')
 
         if 'submit_goal' in request.POST and goal_form.is_valid():
@@ -239,3 +274,49 @@ def budget_goals(request):
         'goals': goals,
     }
     return render(request, 'budget_goals.html', context)
+import csv
+from django.http import HttpResponse
+
+@login_required
+def export_expenses_csv(request):
+    # Get user expenses
+    expenses = Expense.objects.filter(user=request.user).order_by('-date')
+
+    # Create response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
+
+    # Create CSV writer
+    writer = csv.writer(response)
+    writer.writerow(['Date', 'Category', 'Amount', 'Title'])
+
+    for expense in expenses:
+        writer.writerow([expense.date, expense.category, expense.amount, expense.title])
+
+    return response
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+
+@login_required
+def export_expenses_pdf(request):
+    expenses = Expense.objects.filter(user=request.user).order_by('-date')
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="expenses.pdf"'
+
+    p = canvas.Canvas(response)
+    p.setFont("Helvetica", 12)
+
+    y = 800
+    p.drawString(50, y, "Date       Category     Amount     Title")
+    y -= 20
+
+    for exp in expenses:
+        p.drawString(50, y, f"{exp.date}   {exp.category}   ₹{exp.amount}   {exp.title}")
+        y -= 20
+        if y < 40:  # Start new page if space ends
+            p.showPage()
+            y = 800
+
+    p.save()
+    return response
