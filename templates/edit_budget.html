@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-xl mx-auto mt-10 bg-white shadow rounded p-6">
+  <h2 class="text-2xl font-bold mb-4">✏️ Edit Budget</h2>
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">Update Budget</button>
+    <a href="{% url 'home' %}" class="ml-4 text-gray-600 hover:underline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

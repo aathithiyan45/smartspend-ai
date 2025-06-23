@@ -52,3 +52,12 @@ class SavingGoalForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['deadline'].initial = date.today()
+
+# forms.py
+from django import forms
+from .models import ReceiptUpload
+
+class ReceiptUploadForm(forms.ModelForm):
+    class Meta:
+        model = ReceiptUpload
+        fields = ['image']

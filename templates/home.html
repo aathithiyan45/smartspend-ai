@@ -70,72 +70,102 @@
                 <p class="text-blue-800 font-medium text-lg">{{ trend_message|default:"No trend data available." }}</p>
             </div>
         </div>
+        <form method="GET" action="{% url 'smart_search' %}">
+            <input type="text" name="q" placeholder="e.g. Show all travel expenses from Jan to March" class="input" />
+            <button type="submit" class="btn">Search</button>
+          </form>
+          
 
         <!-- Main Dashboard Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <!-- Budget Summary -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">📊 Budget Overview</h2>
-                    <div class="space-y-4 max-h-80 overflow-y-auto">
-                        {% for category in category_summary %}
-                        <div class="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-semibold text-gray-800">{{ category.category }}</h3>
-                                <span class="text-xs px-2 py-1 rounded-full
-                                    {% if category.status == '✅ Under Budget' %}bg-green-100 text-green-800
-                                    {% elif category.status == '⚠️ Almost Full' %}bg-yellow-100 text-yellow-800
-                                    {% else %}bg-red-100 text-red-800{% endif %}">
-                                    {{ category.status }}
-                                </span>
-                            </div>
-                            <div class="text-sm text-gray-600 mb-2">
-                                ₹{{ category.spent|default_if_none:0|floatformat:0 }} / ₹{{ category.limit|default_if_none:0|floatformat:0 }}
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="h-2 rounded-full transition-all duration-300
-                                    {% if category.percent >= 100 %}bg-red-500
-                                    {% elif category.percent >= 80 %}bg-yellow-500
-                                    {% else %}bg-green-500{% endif %}"
-                                    style="width: {{ category.percent|default_if_none:0|floatformat:0 }}%"></div>
-                            </div>
-                            <div class="text-right text-xs text-gray-500 mt-1">{{ category.percent|default_if_none:0|floatformat:0 }}%</div>
-                        </div>
-                        {% empty %}
-                        <p class="text-gray-500 text-center py-4">No budgets set for this month.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-            <!-- Saving Goals -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">🎯 Saving Goals</h2>
-                    <div class="space-y-4 max-h-80 overflow-y-auto">
-                        {% for goal in goals %}
-                        <div class="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-semibold text-gray-800">{{ goal.goal_name }}</h3>
-                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                    {{ goal.deadline|date:"M d" }}
-                                </span>
-                            </div>
-                            <div class="text-sm text-gray-600 mb-2">
-                                ₹{{ goal.current_amount|default_if_none:0|floatformat:0 }} / ₹{{ goal.target_amount|default_if_none:0|floatformat:0 }}
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                                    style="width: {{ goal.progress_percent|default_if_none:0 }}%"></div>
-                            </div>
-                            <div class="text-right text-xs text-gray-500 mt-1">{{ goal.progress_percent|default_if_none:0 }}%</div>
-                        </div>
-                        {% empty %}
-                        <p class="text-gray-500 text-center py-4">No saving goals set.</p>
-                        {% endfor %}
-                    </div>
-                </div>
+    <!-- Budget Summary -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">📊 Budget Overview</h2>
+        <div class="space-y-4 max-h-80 overflow-y-auto">
+          {% for category in category_summary %}
+          <div class="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-semibold text-gray-800">{{ category.category }}</h3>
+              <span class="text-xs px-2 py-1 rounded-full
+                {% if category.status == '✅ Under Budget' %}bg-green-100 text-green-800
+                {% elif category.status == '⚠️ Almost Full' %}bg-yellow-100 text-yellow-800
+                {% else %}bg-red-100 text-red-800{% endif %}">
+                {{ category.status }}
+              </span>
             </div>
+            <div class="text-sm text-gray-600 mb-2">
+              ₹{{ category.spent|default_if_none:0|floatformat:0 }} / ₹{{ category.limit|default_if_none:0|floatformat:0 }}
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="h-2 rounded-full transition-all duration-300
+                {% if category.percent >= 100 %}bg-red-500
+                {% elif category.percent >= 80 %}bg-yellow-500
+                {% else %}bg-green-500{% endif %}"
+                style="width: {{ category.percent|default_if_none:0|floatformat:0 }}%"></div>
+            </div>
+            <div class="text-right text-xs text-gray-500 mt-1">{{ category.percent|default_if_none:0|floatformat:0 }}%</div>
+  
+            <!-- Action buttons -->
+            <div class="flex justify-end gap-3 mt-3">
+              <<a href="{% url 'edit_budget' category.budget_id %}">Edit</a>
+
+              <form method="POST" action="{% url 'delete_budget' category.budget_id %}" onsubmit="return confirm('Delete this budget?')">
+                {% csrf_token %}
+                <button type="submit" class="text-red-600 text-sm hover:underline">Delete</button>
+              </form>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-gray-500 text-center py-4">No budgets set for this month.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  
+    <!-- Saving Goals -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">🎯 Saving Goals</h2>
+        <div class="space-y-4 max-h-80 overflow-y-auto">
+          {% for goal in goals %}
+          <div class="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-semibold text-gray-800">{{ goal.goal_name }}</h3>
+              <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                {{ goal.deadline|date:"M d" }}
+              </span>
+            </div>
+            <div class="text-sm text-gray-600 mb-2">
+              ₹{{ goal.current_amount|default_if_none:0|floatformat:0 }} / ₹{{ goal.target_amount|default_if_none:0|floatformat:0 }}
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style="width: {{ goal.progress_percent|default_if_none:0 }}%"></div>
+            </div>
+            <div class="text-right text-xs text-gray-500 mt-1">{{ goal.progress_percent|default_if_none:0 }}%</div>
+  
+            <!-- Action buttons -->
+            <div class="flex justify-end gap-3 mt-3">
+                <a href="{% url 'edit_goal' goal.id %}" class="text-blue-600 text-sm hover:underline">Edit</a>
+              
+                <form method="POST" action="{% url 'delete_goal' goal.id %}" onsubmit="return confirm('Delete this goal?')">
+                  {% csrf_token %}
+                  <button type="submit" class="text-red-600 text-sm hover:underline">Delete</button>
+                </form>
+              </div>
+              
+          </div>
+          {% empty %}
+          <p class="text-gray-500 text-center py-4">No saving goals set.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  
+  </div>
+  
 
             <!-- Budget Feedback & Tips -->
             <div class="lg:col-span-1">
@@ -259,4 +289,9 @@
     transition-duration: 150ms;
 }
 </style>
+<a href="{% url 'add_expense' %}" 
+   class="fixed bottom-6 right-6 bg-emerald-500 text-white p-4 rounded-full shadow-lg hover:bg-emerald-600 z-50">
+   <i class="fas fa-plus"></i>
+</a>
+
 {% endblock %}

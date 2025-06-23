@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Receipt Details</h2>
+  <img src="{{ receipt.image.url }}" width="300" />
+  <pre>{{ receipt.extracted_data|safe }}</pre>
+{% endblock %}

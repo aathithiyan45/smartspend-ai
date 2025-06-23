@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white rounded shadow">
+  <h2 class="text-xl font-bold mb-4">🔍 Search Results for: "{{ query }}"</h2>
+
+  {% if expenses %}
+    <ul class="space-y-4">
+      {% for expense in expenses %}
+        <li class="border p-4 rounded shadow-sm">
+          <p><strong>Title:</strong> {{ expense.title }}</p>
+          <p><strong>Category:</strong> {{ expense.category }}</p>
+          <p><strong>Amount:</strong> ₹{{ expense.amount }}</p>
+          <p><strong>Date:</strong> {{ expense.date }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-gray-600 mt-4">No expenses found matching your search.</p>
+  {% endif %}
+</div>
+{% endblock %}

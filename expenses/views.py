@@ -3,14 +3,18 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
 from datetime import datetime, date, timedelta
+from django.http import HttpResponse
 import json
-import calendar
 import numpy as np
+import csv
+import calendar
+from reportlab.pdfgen import canvas
 from sklearn.linear_model import LinearRegression
 
 from .models import Expense, CategoryBudget, SavingGoal
 from .forms import ExpenseForm, CategoryBudgetForm, SavingGoalForm
 from ml.model import predict_category
+
 
 @login_required
 def home(request):
@@ -31,7 +35,6 @@ def home(request):
     this_month = today.replace(day=1)
     previous_month = (this_month - timedelta(days=1)).replace(day=1)
 
-    # Monthly Totals
     current_total = Expense.objects.filter(
         user=request.user,
         date__month=this_month.month,
@@ -44,14 +47,9 @@ def home(request):
         date__year=previous_month.year
     ).aggregate(Sum('amount'))['amount__sum'] or 0
 
-    if previous_total > 0:
-        trend_percent = ((current_total - previous_total) / previous_total) * 100
-    else:
-        trend_percent = 0
-
+    trend_percent = ((current_total - previous_total) / previous_total) * 100 if previous_total > 0 else 0
     trend_message = f"📊 This month's spending is {'up' if trend_percent > 0 else 'down'} by {abs(trend_percent):.1f}% compared to last month."
 
-    # Budgets
     budgets = CategoryBudget.objects.filter(user=request.user).order_by('-month')
 
     category_summary = []
@@ -62,7 +60,6 @@ def home(request):
         spent = expenses.filter(category__iexact=budget.category).aggregate(total=Sum('amount'))['total'] or 0
         spent_float = float(spent)
         limit = float(budget.monthly_limit or 0)
-
         percent = round((spent_float / limit) * 100) if limit > 0 else 0
 
         if percent >= 100:
@@ -75,24 +72,27 @@ def home(request):
             if percent < 50:
                 budget_feedback.append(f"Used only {percent}% of '{budget.category}' budget. Maybe lower the budget next month.")
 
+        # ✅ Added budget_id for edit/delete in templates
         category_summary.append({
             "category": budget.category,
             "limit": limit,
             "spent": spent_float,
             "percent": percent,
-            "status": status
+            "status": status,
+            "budget_id": budget.id,
         })
 
-        # 🔥 Personalized Saving Tips
+        # 🔥 Saving Tips
         if spent_float > limit:
             excess = spent_float - limit
-            tip = f"🍽️ You overspent ₹{excess:.0f} in '{budget.category}'. Try reducing it by 20% to save ₹{(spent_float * 0.2):.0f}/month."
-            saving_tips.append(tip)
+            saving_tips.append(
+                f"🍽️ You overspent ₹{excess:.0f} in '{budget.category}'. Try reducing it by 20% to save ₹{(spent_float * 0.2):.0f}/month."
+            )
         elif spent_float >= 0.8 * limit:
-            tip = f"⚠️ '{budget.category}' spending is almost full. Try cutting 10% to save ₹{(spent_float * 0.1):.0f}."
-            saving_tips.append(tip)
+            saving_tips.append(
+                f"⚠️ '{budget.category}' spending is almost full. Try cutting 10% to save ₹{(spent_float * 0.1):.0f}."
+            )
 
-    # Saving Goals
     goals = SavingGoal.objects.filter(user=request.user)
 
     for goal in goals:
@@ -100,7 +100,7 @@ def home(request):
         target = float(goal.target_amount or 1)
         goal.progress_percent = round((saved / target) * 100)
 
-        remaining = float(goal.target_amount) - float(goal.current_amount or 0)
+        remaining = target - saved
         days_left = (goal.deadline - today).days
         if remaining > 0 and days_left > 0:
             per_day = remaining / days_left
@@ -117,13 +117,14 @@ def home(request):
         'trend_message': trend_message,
         'budget_feedback': budget_feedback,
         'saving_tips': saving_tips,
+        'budgets': budgets,
     }
 
     return render(request, 'home.html', context)
 
+
 @login_required
 def add_expense(request):
-    """Add a new expense, auto-predicting category."""
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
         if form.is_valid():
@@ -136,10 +137,8 @@ def add_expense(request):
         form = ExpenseForm()
     return render(request, 'add_expense.html', {'form': form})
 
-
 @login_required
 def edit_expense(request, expense_id):
-    """Edit an existing expense by ID."""
     expense = get_object_or_404(Expense, id=expense_id, user=request.user)
     if request.method == 'POST':
         form = ExpenseForm(request.POST, instance=expense)
@@ -150,10 +149,8 @@ def edit_expense(request, expense_id):
         form = ExpenseForm(instance=expense)
     return render(request, 'edit_expense.html', {'form': form, 'expense': expense})
 
-
 @login_required
 def delete_expense(request, expense_id):
-    """Delete an expense after confirmation."""
     expense = get_object_or_404(Expense, id=expense_id, user=request.user)
     if request.method == 'POST':
         expense.delete()
@@ -162,58 +159,26 @@ def delete_expense(request, expense_id):
 
 @login_required
 def stats(request):
-    """Show aggregate stats: total, category-wise, monthly trends, and future predictions."""
     total = Expense.objects.filter(user=request.user).aggregate(Sum('amount'))['amount__sum'] or 0
-
-    categories = (
-        Expense.objects.filter(user=request.user)
-        .values('category')
-        .annotate(total=Sum('amount'))
-    )
-
-    monthly = (
-        Expense.objects.filter(user=request.user)
-        .annotate(month=TruncMonth('date'))
-        .values('month')
-        .annotate(total=Sum('amount'))
-        .order_by('month')
-    )
-
+    categories = Expense.objects.filter(user=request.user).values('category').annotate(total=Sum('amount'))
+    monthly = Expense.objects.filter(user=request.user).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
     category_labels = [cat['category'] for cat in categories]
     category_totals = [float(cat['total']) for cat in categories]
-
     month_labels = [entry['month'].strftime('%b %Y') for entry in monthly]
     month_totals = [float(entry['total']) for entry in monthly]
-
     latest_month_label = month_labels[-1] if month_labels else None
     latest_month_total = month_totals[-1] if month_totals else 0
+    top3_months = sorted([(entry['month'].strftime('%b %Y'), float(entry['total'])) for entry in monthly], key=lambda x: x[1], reverse=True)[:3]
 
-    # Top 3 months
-    top3_qs = sorted(monthly, key=lambda x: x['total'], reverse=True)[:3]
-    top3_months = [
-        (entry['month'].strftime('%b %Y'), float(entry['total']))
-        for entry in top3_qs
-    ]
-
-    # 📅 Future Expense Prediction per Category
     future_predictions = {}
     for cat in categories:
         category_name = cat['category']
-        monthly_cat_data = (
-            Expense.objects.filter(user=request.user, category=category_name)
-            .annotate(month=TruncMonth('date'))
-            .values('month')
-            .annotate(total=Sum('amount'))
-            .order_by('month')
-        )
-
+        monthly_cat_data = Expense.objects.filter(user=request.user, category=category_name).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
         if len(monthly_cat_data) >= 2:
             X = np.array([entry['month'].month for entry in monthly_cat_data]).reshape(-1, 1)
-
             y = np.array([float(entry['total']) for entry in monthly_cat_data])
             model = LinearRegression()
             model.fit(X, y)
-
             next_month_index = np.array([[len(monthly_cat_data)]])
             predicted = model.predict(next_month_index)[0]
             future_predictions[category_name] = round(predicted, 2)
@@ -227,19 +192,15 @@ def stats(request):
         'month_totals': json.dumps(month_totals),
         'trend_labels': json.dumps(month_labels),
         'trend_totals': json.dumps(month_totals),
-
         'latest_month_label': latest_month_label,
         'latest_month_total': latest_month_total,
         'top3_months': top3_months,
         'future_predictions': json.dumps(future_predictions),
     }
-
     return render(request, 'stats.html', context)
-
 
 @login_required
 def budget_goals(request):
-    """View to add new budgets and saving goals, and show current ones."""
     budget_form = CategoryBudgetForm(request.POST or None)
     goal_form = SavingGoalForm(request.POST or None)
 
@@ -247,15 +208,12 @@ def budget_goals(request):
         if 'submit_budget' in request.POST and budget_form.is_valid():
             budget = budget_form.save(commit=False)
             budget.user = request.user
-
             month_str = request.POST.get('month')
-            if month_str and len(month_str) == 7:  # Expecting YYYY-MM
+            if month_str and len(month_str) == 7:
                 budget.month = datetime.strptime(month_str, '%Y-%m').date().replace(day=1)
             else:
                 budget.month = date.today().replace(day=1)
-
             budget.save()
-            print(f"✅ Saved budget: {budget.category} | Month: {budget.month} | User: {budget.user}")
             return redirect('budget_goals')
 
         if 'submit_goal' in request.POST and goal_form.is_valid():
@@ -266,7 +224,6 @@ def budget_goals(request):
 
     budgets = CategoryBudget.objects.filter(user=request.user).order_by('-month')
     goals = SavingGoal.objects.filter(user=request.user).order_by('deadline')
-
     context = {
         'budget_form': budget_form,
         'goal_form': goal_form,
@@ -274,49 +231,203 @@ def budget_goals(request):
         'goals': goals,
     }
     return render(request, 'budget_goals.html', context)
-import csv
-from django.http import HttpResponse
 
 @login_required
 def export_expenses_csv(request):
-    # Get user expenses
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
-
-    # Create response
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
-
-    # Create CSV writer
     writer = csv.writer(response)
     writer.writerow(['Date', 'Category', 'Amount', 'Title'])
-
     for expense in expenses:
         writer.writerow([expense.date, expense.category, expense.amount, expense.title])
-
     return response
-from reportlab.pdfgen import canvas
-from django.http import HttpResponse
 
 @login_required
 def export_expenses_pdf(request):
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
-
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="expenses.pdf"'
-
     p = canvas.Canvas(response)
     p.setFont("Helvetica", 12)
-
     y = 800
     p.drawString(50, y, "Date       Category     Amount     Title")
     y -= 20
-
     for exp in expenses:
         p.drawString(50, y, f"{exp.date}   {exp.category}   ₹{exp.amount}   {exp.title}")
         y -= 20
-        if y < 40:  # Start new page if space ends
+        if y < 40:
             p.showPage()
             y = 800
-
     p.save()
     return response
+
+@login_required
+def edit_budget(request, budget_id):
+    budget = get_object_or_404(CategoryBudget, id=budget_id, user=request.user)
+    if request.method == 'POST':
+        form = CategoryBudgetForm(request.POST, instance=budget)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = CategoryBudgetForm(instance=budget)
+    return render(request, 'edit_budget.html', {'form': form})
+
+@login_required
+def delete_budget(request, budget_id):
+    budget = get_object_or_404(CategoryBudget, id=budget_id, user=request.user)
+    if request.method == 'POST':
+        budget.delete()
+        return redirect('home')
+    return render(request, 'confirm_delete.html', {'object': budget, 'type': 'Budget'})
+
+@login_required
+def edit_goal(request, goal_id):
+    goal = get_object_or_404(SavingGoal, id=goal_id, user=request.user)
+    if request.method == 'POST':
+        form = SavingGoalForm(request.POST, instance=goal)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = SavingGoalForm(instance=goal)
+    return render(request, 'edit_goal.html', {'form': form})
+
+@login_required
+def delete_goal(request, goal_id):
+    goal = get_object_or_404(SavingGoal, id=goal_id, user=request.user)
+    if request.method == 'POST':
+        goal.delete()
+        return redirect('home')
+    return render(request, 'confirm_delete.html', {'object': goal, 'type': 'Saving Goal'})
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Expense
+from utils.nlp_parser import extract_query_data
+
+
+@login_required
+def smart_search(request):
+    query = request.GET.get('q', '').strip()
+    
+    # Parse the query using your custom NLP function
+    parsed = extract_query_data(query)
+    
+    # Start with all expenses of the user
+    expenses = Expense.objects.filter(user=request.user)
+
+    # 🔍 Filter by category if available
+    if parsed.get('category'):
+        expenses = expenses.filter(category__iexact=parsed['category'])
+
+    # 📅 Filter by date range if both start and end are present
+    start_date = parsed.get('start_date')
+    end_date = parsed.get('end_date')
+    if start_date and end_date:
+        expenses = expenses.filter(date__range=(start_date, end_date))
+
+    # 🧾 Order by most recent first
+    expenses = expenses.order_by('-date')
+
+    context = {
+        'expenses': expenses,
+        'query': query,
+        'parsed': parsed,  # Optional: show extracted info for debugging
+    }
+
+    return render(request, 'smart_search_results.html', context)
+
+import re
+import logging
+import pytesseract
+from PIL import Image
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import ReceiptUploadForm
+from .models import ReceiptUpload
+
+logger = logging.getLogger(__name__)
+
+def predict_category(text):
+    text = text.lower()
+    if any(word in text for word in ['petrol', 'fuel', 'diesel', 'shell']):
+        return 'Travel'
+    elif any(word in text for word in ['burger', 'restaurant', 'cafe', 'fries', 'dining']):
+        return 'Food'
+    elif any(word in text for word in ['milk', 'rice', 'supermarket', 'grocery', 'store']):
+        return 'Groceries'
+    elif any(word in text for word in ['book', 'course', 'tuition']):
+        return 'Education'
+    return 'Other'
+
+def extract_receipt_info(text):
+    text = text.replace('\r\n', '\n')
+    amount_match = re.findall(r'(?:[\₹\$]?\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', text)
+    amounts = []
+    for amt in amount_match:
+        cleaned = amt.replace('₹', '').replace('$', '').replace(',', '').strip()
+        try:
+            amounts.append(float(cleaned))
+        except:
+            pass
+    total_amount = max(amounts) if amounts else "N/A"
+    date_match = re.findall(r'\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}', text)
+    date = date_match[0] if date_match else "N/A"
+    lines = text.strip().split('\n')
+    title = next((line for line in lines if line.strip() and not any(k in line.lower() for k in ['bill', 'date', 'invoice'])), "N/A")
+    category = predict_category(text)
+    return {
+        "title": title,
+        "amount": total_amount,
+        "date": date,
+        "category": category,
+        "raw_text": text
+    }
+
+
+def upload_receipt(request):
+    if request.method == 'POST':
+        form = ReceiptUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            receipt = form.save(commit=False)
+            receipt.user = request.user
+
+            try:
+                # OCR text extraction
+                img = Image.open(receipt.image)
+                text = pytesseract.image_to_string(img)
+                logger.info(f"OCR Text: {text}")
+
+                # Parse and save extracted data
+                extracted = extract_receipt_info(text)
+                receipt.extracted_data = extracted
+                receipt.save()
+
+                # Auto-create Expense from extracted data
+                if extracted['amount'] != "N/A" and extracted['title'] != "N/A" and extracted['date'] != "N/A":
+                    Expense.objects.create(
+                        user=request.user,
+                        title=extracted['title'],
+                        amount=extracted['amount'],
+                        category=extracted['category'],
+                        date=extracted['date'],  # should be a string like '2025-06-10'
+                        payment_method='cash',   # default, or you can let user choose later
+                        notes='Imported via OCR'
+                    )
+                    logger.info("Expense created from receipt data.")
+
+                return redirect('receipt_detail', receipt_id=receipt.id)
+
+            except Exception as e:
+                logger.error(f"Error processing receipt: {e}")
+                form.add_error(None, "Failed to process receipt image. Please try another image.")
+    else:
+        form = ReceiptUploadForm()
+
+    return render(request, 'upload_receipt.html', {'form': form})
+
+def receipt_detail(request, receipt_id):
+    receipt = get_object_or_404(ReceiptUpload, id=receipt_id, user=request.user)
+    return render(request, 'receipt_detail.html', {'receipt': receipt})

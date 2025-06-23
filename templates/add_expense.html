@@ -6,13 +6,21 @@
 
   <form method="POST" class="bg-white p-6 rounded shadow space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}  <!-- Uses Django form rendering with Tailwind-styled widgets -->
-    
+    {{ form.as_p }}  <!-- Django form rendering -->
+
     <div class="text-right">
       <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
         💾 Save Expense
       </button>
     </div>
   </form>
+
+  <!-- 📤 Upload Receipt Section -->
+  <div class="mt-6 text-center">
+    <p class="text-gray-600 mb-2">Or upload a receipt to auto-fill</p>
+    <a href="{% url 'upload_receipt' %}" class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition duration-200">
+      📤 Upload Receipt
+    </a>
+  </div>
 </div>
 {% endblock %}

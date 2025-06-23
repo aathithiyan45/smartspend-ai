@@ -1,12 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2 class="text-xl font-bold text-red-600 mb-4">Are you sure?</h2>
-<p>Delete expense: <strong>{{ expense.title }}</strong> (₹{{ expense.amount }})</p>
+<div class="max-w-xl mx-auto mt-20 bg-white shadow-lg rounded-lg p-6 text-center">
+  <h2 class="text-xl font-bold text-red-600 mb-4">⚠️ Confirm Delete</h2>
 
-<form method="POST">
+  {% if expense %}
+    <p>Are you sure you want to delete this <strong>expense</strong>: <br><strong>{{ expense.title }}</strong> (₹{{ expense.amount }})?</p>
+  {% elif budget %}
+    <p>Are you sure you want to delete this <strong>budget</strong> for <strong>{{ budget.category }}</strong>?</p>
+  {% elif goal %}
+    <p>Are you sure you want to delete the <strong>goal</strong>: <strong>{{ goal.goal_name }}</strong>?</p>
+  {% else %}
+    <p>Are you sure you want to delete this item?</p>
+  {% endif %}
+
+  <form method="POST" class="mt-6">
     {% csrf_token %}
     <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Confirm Delete</button>
     <a href="{% url 'home' %}" class="ml-4 text-blue-600 underline">Cancel</a>
-</form>
+  </form>
+</div>
 {% endblock %}
