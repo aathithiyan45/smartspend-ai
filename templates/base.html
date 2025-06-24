@@ -1,81 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>SpendAI - Smart Financial Management</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpendAI - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    * { font-family: 'Inter', sans-serif; }
-    .sidebar-item { position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+    
+    * { 
+      font-family: 'Inter', sans-serif; 
+    }
+    
+    .sidebar-item {
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+    
     .sidebar-item::before {
       content: '';
       position: absolute;
-      left: 0; top: 0; height: 100%; width: 4px;
-      background: linear-gradient(135deg, #10b981, #059669);
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background: linear-gradient(135deg, #8B5CF6, #A855F7);
       transform: scaleY(0);
       transition: transform 0.3s ease;
-      border-radius: 0 4px 4px 0;
+      border-radius: 0 2px 2px 0;
     }
-    .sidebar-item:hover::before, .sidebar-item.active::before { transform: scaleY(1); }
+    
+    .sidebar-item:hover::before,
+    .sidebar-item.active::before {
+      transform: scaleY(1);
+    }
+    
     .sidebar-item:hover {
-      background: rgba(16, 185, 129, 0.1);
-      transform: translateX(8px);
+      background: rgba(139, 92, 246, 0.1);
+      transform: translateX(4px);
     }
+    
     .sidebar-item.active {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
-      transform: translateX(8px);
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1));
+      transform: translateX(4px);
     }
-    .sidebar-item i { transition: all 0.3s ease; }
-    .sidebar-item:hover i { transform: scale(1.1); color: #10b981; }
-    .sidebar-item.active i { color: #10b981; }
+    
+    .sidebar-item i {
+      transition: all 0.3s ease;
+    }
+    
+    .sidebar-item:hover i,
+    .sidebar-item.active i {
+      color: #8B5CF6;
+      transform: scale(1.1);
+    }
+    
     .logo-gradient {
-      background: linear-gradient(135deg, #10b981, #059669, #047857);
+      background: linear-gradient(135deg, #8B5CF6, #A855F7, #C084FC);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    .flame-icon {
+      background: linear-gradient(135deg, #F59E0B, #F97316, #EF4444);
+      border-radius: 12px;
     }
+    
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #374151;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    
+    .toggle-switch.active {
+      background: #8B5CF6;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(20px);
+    }
+    
     .floating-animation {
       animation: float 6s ease-in-out infinite;
     }
+    
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
+      50% { transform: translateY(-5px); }
     }
-    .fade-in {
-      animation: fadeIn 0.6s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    
     .user-avatar {
-      background: linear-gradient(135deg, #10b981, #059669);
+      background: linear-gradient(135deg, #8B5CF6, #A855F7);
       transition: all 0.3s ease;
     }
+    
     .user-avatar:hover {
       transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
     }
-    .logout-btn { transition: all 0.3s ease; }
-    .logout-btn:hover {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    }
-    .nav-divider {
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      height: 1px;
-    }
-    /* Responsive Sidebar */
+    
+    /* Mobile Sidebar */
     @media (max-width: 1024px) {
       .sidebar {
         position: fixed;
@@ -83,25 +126,30 @@
         left: 0;
         top: 0;
         bottom: 0;
-        width: 80vw;
-        max-width: 320px;
+        width: 280px;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
       }
+      
       .sidebar.mobile-open {
         transform: translateX(0);
       }
+      
       .sidebar-backdrop {
         display: block;
       }
     }
+    
     @media (min-width: 1025px) {
-      .sidebar-backdrop { display: none !important; }
+      .sidebar-backdrop {
+        display: none !important;
+      }
     }
+    
     .sidebar-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 40;
       display: none;
       transition: opacity 0.3s;
@@ -109,121 +157,169 @@
   </style>
 </head>
 
-<body class="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 text-gray-800 min-h-screen">
+<body class="bg-gray-100 text-gray-800 min-h-screen">
   <div class="flex h-screen relative">
     <!-- Mobile Menu Button -->
-    <button id="mobile-menu-btn" aria-label="Open Menu" class="md:hidden fixed top-4 left-4 z-50 bg-white rounded-full p-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400">
+    <button id="mobile-menu-btn" 
+            class="lg:hidden fixed top-4 left-4 z-50 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            aria-label="Open Menu">
       <i class="fas fa-bars text-gray-700"></i>
     </button>
-    <!-- Mobile overlay -->
+
+    <!-- Mobile Backdrop -->
     <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
     <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col shadow-2xl relative overflow-hidden lg:static">
+    <aside id="sidebar" class="sidebar w-72 bg-[#0F0F2D] text-white flex flex-col shadow-2xl relative overflow-hidden">
       <!-- Background decoration -->
-      <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 pointer-events-none"></div>
-      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
-      <div class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-cyan-400/20 to-blue-400/20 rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 pointer-events-none"></div>
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/10 to-violet-400/10 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+      
       <!-- Logo Section -->
       <div class="relative px-6 py-6 border-b border-white/10">
         <div class="flex items-center space-x-3 floating-animation">
-          <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
-            <i class="fas fa-chart-line text-white text-xl"></i>
+          <div class="flame-icon w-12 h-12 flex items-center justify-center shadow-lg">
+            <i class="fas fa-fire text-white text-xl"></i>
           </div>
           <div>
             <h1 class="text-2xl font-bold logo-gradient">SpendAI</h1>
-            <p class="text-xs text-gray-400 font-medium">Smart Financial Hub</p>
+            <p class="text-xs text-gray-400 font-medium">Smart Finance Hub</p>
           </div>
         </div>
       </div>
-      <!-- Navigation -->
-      <nav class="flex-1 px-4 py-6 space-y-3 relative">
-        <a href="{% url 'home' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/' %}active{% endif %}">
-          <i class="fas fa-home text-lg w-5"></i>
-          <span class="font-medium">Dashboard</span>
-        </a>
-        <a href="{% url 'add_expense' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/add/' %}active{% endif %}">
-          <i class="fas fa-plus-circle text-lg w-5"></i>
-          <span class="font-medium">Add Expense</span>
-        </a>
-        <a href="{% url 'budget_goals' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/budget-goals/' %}active{% endif %}">
-          <i class="fas fa-bullseye text-lg w-5"></i>
-          <span class="font-medium">Budget & Goals</span>
-        </a>
-        <a href="{% url 'stats' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl {% if request.path == '/stats/' %}active{% endif %}">
-          <i class="fas fa-chart-bar text-lg w-5"></i>
-          <span class="font-medium">Analytics</span>
-        </a>
+
+      <!-- Main Navigation -->
+      <nav class="flex-1 px-4 py-6 space-y-2 relative overflow-y-auto">
+        <!-- Primary Navigation -->
+        <ul class="space-y-1">
+          <li>
+            <a href="{% url 'home' %}" class="sidebar-item {% if request.path == '/' %}active{% endif %} flex items-center space-x-4 py-3 px-4 rounded-xl">
+              <i class="fas fa-th-large text-lg w-5"></i>
+              <span class="font-medium">Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'add_expense' %}" class="sidebar-item {% if request.path == '/add/' %}active{% endif %} flex items-center space-x-4 py-3 px-4 rounded-xl">
+              <i class="fas fa-plus-circle text-lg w-5"></i>
+              <span class="font-medium">Add Expense</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'budget_goals' %}" class="sidebar-item {% if request.path == '/budget-goals/' %}active{% endif %} flex items-center space-x-4 py-3 px-4 rounded-xl">
+              <i class="fas fa-bullseye text-lg w-5"></i>
+              <span class="font-medium">Budget & Goals</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'stats' %}" class="sidebar-item {% if request.path == '/stats/' %}active{% endif %} flex items-center space-x-4 py-3 px-4 rounded-xl">
+              <i class="fas fa-chart-bar text-lg w-5"></i>
+              <span class="font-medium">Analytics</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'profile' %}" class="sidebar-item {% if request.path == '/profile/' %}active{% endif %} flex items-center space-x-4 py-3 px-4 rounded-xl">
+              <i class="fas fa-cog text-lg w-5"></i>
+              <span class="font-medium">Settings</span>
+            </a>
+          </li>
+        </ul>
+        
+        
+
         <!-- Divider -->
-        <div class="nav-divider my-6"></div>
-        <!-- Auth Section -->
-        {% if user.is_authenticated %}
-          <!-- User Profile -->
-          <div class="glass-effect rounded-xl p-4 mb-4">
-            <div class="flex items-center space-x-3">
-              <div class="user-avatar w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
-                {{ user.username|first|upper }}
+        <div class="my-6">
+          <div class="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        </div>
+
+        <!-- Secondary Navigation -->
+        <ul class="space-y-1">
+          <li>
+            <a href="#" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
+              <i class="fas fa-shield-alt text-lg w-5"></i>
+              <span class="font-medium">Security</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
+              <i class="fas fa-question-circle text-lg w-5"></i>
+              <span class="font-medium">Help Centre</span>
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center justify-between py-3 px-4 rounded-xl">
+              <div class="flex items-center space-x-4">
+                <i class="fas fa-moon text-lg w-5 text-gray-300"></i>
+                <span class="font-medium text-gray-300">Dark Mode</span>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-white truncate">{{ user.username }}</p>
-                <p class="text-xs text-gray-400">Premium User</p>
+              <div id="dark-mode-toggle" class="toggle-switch active">
+                <div class="toggle-slider"></div>
               </div>
             </div>
-          </div>
-          <a href="{% url 'profile' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
-            <i class="fas fa-user-circle text-lg w-5"></i>
-            <span class="font-medium">Profile Settings</span>
-          </a>
-          <form action="{% url 'logout' %}" method="POST" class="mt-4">
-            {% csrf_token %}
-            <button type="submit" class="logout-btn w-full flex items-center space-x-4 py-3 px-4 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30">
-              <i class="fas fa-sign-out-alt text-lg w-5"></i>
-              <span class="font-medium">Sign Out</span>
-            </button>
-          </form>
-        {% else %}
-          <a href="{% url 'login' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
-            <i class="fas fa-sign-in-alt text-lg w-5 text-emerald-400"></i>
-            <span class="font-medium text-emerald-300">Sign In</span>
-          </a>
-          <a href="{% url 'register' %}" class="sidebar-item flex items-center space-x-4 py-3 px-4 rounded-xl">
-            <i class="fas fa-user-plus text-lg w-5"></i>
-            <span class="font-medium">Create Account</span>
-          </a>
-        {% endif %}
+          </li>
+        </ul>
       </nav>
-      <!-- Footer -->
+
+      <!-- User Profile Section -->
       <div class="relative p-4 border-t border-white/10">
-        <div class="text-center">
-          <p class="text-xs text-gray-400 mb-1">Crafted with</p>
-          <div class="flex items-center justify-center space-x-1">
-            <i class="fas fa-heart text-red-400 text-xs animate-pulse"></i>
-            <span class="text-xs text-gray-300 font-medium">by Aathithiyan</span>
+        <div class="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/5 transition-colors duration-300 cursor-pointer">
+          <div class="user-avatar w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
+            <i class="fas fa-user"></i>
           </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-white truncate">Testuser</p>
+            <p class="text-xs text-gray-400">Premium Account</p>
+          </div>
+          <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
         </div>
       </div>
     </aside>
+
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto relative min-h-screen">
+    <main class="flex-1 overflow-y-auto bg-gray-50 relative min-h-screen">
       <!-- Background Pattern -->
-      <div class="absolute inset-0 bg-gradient-to-br from-white/50 to-slate-100/50"></div>
-      <div class="absolute inset-0 pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, rgba(16,185,129,0.08) 1px, transparent 0); background-size: 22px 22px;"></div>
-      <!-- Content -->
-      <div class="relative z-10 p-4 sm:p-6 md:p-8 fade-in">
+      <div class="absolute inset-0 bg-gradient-to-br from-white/50 to-gray-100/50"></div>
+      <div class="absolute inset-0 pointer-events-none" 
+           style="background-image: radial-gradient(circle at 1px 1px, rgba(139,92,246,0.08) 1px, transparent 0); background-size: 20px 20px;"></div>
+      
+      <!-- Content Container -->
+      <div class="relative z-10 p-4 sm:p-6 lg:p-8">
         {% block content %}
         <!-- Default Welcome Content -->
-        <div class="max-w-5xl mx-auto">
-          <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 flex flex-col md:flex-row items-center gap-8">
-            <div class="flex-1">
-              <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Welcome to <span class="logo-gradient">SpendAI</span></h1>
-              <p class="text-gray-600 text-lg mb-4">Your intelligent financial companion for smarter spending decisions.</p>
-              <ul class="list-none space-y-2">
-                <li class="flex items-center gap-2 text-emerald-700"><i class="fas fa-check-circle"></i> AI-powered expense analytics</li>
-                <li class="flex items-center gap-2 text-emerald-700"><i class="fas fa-check-circle"></i> Smart budgeting and goal setting</li>
-                <li class="flex items-center gap-2 text-emerald-700"><i class="fas fa-check-circle"></i> Personalized financial insights</li>
-              </ul>
-            </div>
-            <div class="w-48 h-48 flex-shrink-0 mx-auto md:mx-0 floating-animation hidden sm:flex items-center justify-center">
-              <img src="https://illustrations.popsy.co/amber/finance.svg" alt="Finance illustration" class="w-full h-full object-contain">
+        <div class="max-w-6xl mx-auto">
+          <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+            <div class="text-center">
+              <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
+                Welcome to <span class="logo-gradient">SpendAI</span>
+              </h1>
+              <p class="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
+                Your intelligent financial companion for smarter spending decisions and better financial health.
+              </p>
+              
+              <div class="grid md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-brain text-white"></i>
+                  </div>
+                  <h3 class="font-semibold text-gray-800 mb-2">AI-Powered Analytics</h3>
+                  <p class="text-gray-600 text-sm">Get intelligent insights into your spending patterns</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
+                  <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-target text-white"></i>
+                  </div>
+                  <h3 class="font-semibold text-gray-800 mb-2">Smart Budgeting</h3>
+                  <p class="text-gray-600 text-sm">Set and achieve your financial goals with ease</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-xl border border-orange-100">
+                  <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-line text-white"></i>
+                  </div>
+                  <h3 class="font-semibold text-gray-800 mb-2">Real-time Tracking</h3>
+                  <p class="text-gray-600 text-sm">Monitor your expenses in real-time</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -231,39 +327,76 @@
       </div>
     </main>
   </div>
-  <!-- Mobile Menu Script -->
+
+  <!-- JavaScript -->
   <script>
+    // Mobile menu functionality
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.getElementById('sidebar');
     const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
     function openSidebar() {
       sidebar.classList.add('mobile-open');
       sidebarBackdrop.style.display = 'block';
       setTimeout(() => sidebarBackdrop.style.opacity = '1', 10);
       document.body.style.overflow = 'hidden';
     }
+
     function closeSidebar() {
       sidebar.classList.remove('mobile-open');
       sidebarBackdrop.style.opacity = '0';
       setTimeout(() => sidebarBackdrop.style.display = 'none', 300);
       document.body.style.overflow = '';
     }
-    mobileMenuBtn && mobileMenuBtn.addEventListener('click', openSidebar);
-    sidebarBackdrop && sidebarBackdrop.addEventListener('click', closeSidebar);
 
-    // Prevent sidebar closing when clicking inside sidebar
-    sidebar && sidebar.addEventListener('click', (e) => {
-      if (window.innerWidth <= 1024 && e.target === sidebar) closeSidebar();
+    mobileMenuBtn?.addEventListener('click', openSidebar);
+    sidebarBackdrop?.addEventListener('click', closeSidebar);
+
+    // Close sidebar when clicking outside on mobile
+    sidebar?.addEventListener('click', (e) => {
+      if (window.innerWidth <= 1024 && e.target === sidebar) {
+        closeSidebar();
+      }
     });
-    // Accessibility: close menu with Escape
+
+    // Close sidebar with Escape key
     document.addEventListener('keydown', (e) => {
       if (window.innerWidth <= 1024 && sidebar.classList.contains('mobile-open') && e.key === 'Escape') {
         closeSidebar();
       }
     });
-    // Auto close sidebar on resize >1024px
+
+    // Auto close sidebar on desktop resize
     window.addEventListener('resize', () => {
-      if (window.innerWidth > 1024) closeSidebar();
+      if (window.innerWidth > 1024) {
+        closeSidebar();
+      }
+    });
+
+    // Dark mode toggle functionality
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    
+    darkModeToggle?.addEventListener('click', () => {
+      darkModeToggle.classList.toggle('active');
+      // Add your dark mode logic here
+      console.log('Dark mode toggled:', darkModeToggle.classList.contains('active'));
+    });
+
+    // Navigation active state (for demonstration)
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (item.getAttribute('href') === '#') {
+          e.preventDefault();
+        }
+        
+        // Remove active class from all items
+        document.querySelectorAll('.sidebar-item').forEach(navItem => {
+          navItem.classList.remove('active');
+        });
+        
+        // Add active class to clicked item
+        item.classList.add('active');
+      });
     });
   </script>
 </body>
