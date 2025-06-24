@@ -123,6 +123,9 @@ def home(request):
     return render(request, 'home.html', context)
 
 
+
+from .forms import ExpenseForm
+
 @login_required
 def add_expense(request):
     if request.method == 'POST':
@@ -130,7 +133,7 @@ def add_expense(request):
         if form.is_valid():
             expense = form.save(commit=False)
             expense.user = request.user
-            expense.category = predict_category(expense.title)
+            # ✅ category is already predicted inside the form.save() method
             expense.save()
             return redirect('home')
     else:

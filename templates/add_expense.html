@@ -1,26 +1,364 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-xl mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4 text-center">➕ Add Expense</h1>
-
-  <form method="POST" class="bg-white p-6 rounded shadow space-y-4">
-    {% csrf_token %}
-    {{ form.as_p }}  <!-- Django form rendering -->
-
-    <div class="text-right">
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        💾 Save Expense
-      </button>
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-4xl">
+    <!-- Compact Header -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-3">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-800 mb-1">Add Expense</h1>
+      <p class="text-sm text-gray-600">AI-powered categorization</p>
     </div>
-  </form>
 
-  <!-- 📤 Upload Receipt Section -->
-  <div class="mt-6 text-center">
-    <p class="text-gray-600 mb-2">Or upload a receipt to auto-fill</p>
-    <a href="{% url 'upload_receipt' %}" class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition duration-200">
-      📤 Upload Receipt
-    </a>
+    <!-- Main Form Card -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      <!-- Category Preview Banner -->
+      <div id="categoryBanner" class="bg-gradient-to-r from-emerald-400 to-blue-500 text-white px-4 py-2 hidden transition-all duration-300">
+        <div class="flex items-center justify-between text-sm">
+          <div class="flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            <span class="font-medium">Category:</span>
+            <span id="predictedCategory" class="font-bold bg-white bg-opacity-25 px-2 py-0.5 rounded-full text-xs">-</span>
+          </div>
+          <div class="text-xs opacity-90">✨ Auto-detected</div>
+        </div>
+      </div>
+
+      <!-- Form Content - Two Column Layout -->
+      <form method="POST" class="p-6" id="expenseForm">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Left Column -->
+          <div class="space-y-4">
+            <!-- Title Field -->
+            <div>
+              <label class="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                <span>Title</span>
+                <span class="text-red-500">*</span>
+              </label>
+              {{ form.title }}
+              <p class="text-xs text-gray-500 mt-1">💡 Be specific for AI categorization</p>
+            </div>
+
+            <!-- Amount Field -->
+            <div>
+              <label class="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                <span>Amount</span>
+                <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold text-lg">$</span>
+                <div class="pl-8">{{ form.amount }}</div>
+              </div>
+            </div>
+
+            <!-- Date Field -->
+            <div>
+              <label class="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span>Date</span>
+                <span class="text-red-500">*</span>
+              </label>
+              {{ form.date }}
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="space-y-4">
+            <!-- Payment Method Field -->
+            <div>
+              <label class="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                <span>Payment Method</span>
+                <span class="text-red-500">*</span>
+              </label>
+              {{ form.payment_method }}
+            </div>
+
+            <!-- Notes Field -->
+            <div>
+              <label class="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <span>Notes</span>
+                <span class="text-gray-400 text-xs">(Optional)</span>
+              </label>
+              {{ form.notes }}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-gray-50 rounded-xl p-4 mt-4">
+              <p class="text-sm font-medium text-gray-700 mb-3">Quick Actions</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="quickExpense()" class="flex items-center justify-center space-x-1 bg-white border border-gray-200 hover:border-green-400 text-gray-700 hover:text-green-700 text-xs font-medium py-2 px-3 rounded-lg transition-all duration-200">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                  <span>Quick Add</span>
+                </button>
+                <a href="{% url 'upload_receipt' %}" class="flex items-center justify-center space-x-1 bg-white border border-gray-200 hover:border-purple-400 text-gray-700 hover:text-purple-700 text-xs font-medium py-2 px-3 rounded-lg transition-all duration-200">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                  </svg>
+                  <span>Receipt</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{ form.predicted_category }}
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-gray-100">
+          <button type="button" onclick="window.history.back()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span>Cancel</span>
+          </button>
+          <button type="submit" class="flex-1 sm:flex-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg flex items-center justify-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>Save Expense</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Pro Tips -->
+    <div class="mt-4 text-center">
+      <div class="inline-flex items-center space-x-2 text-xs text-gray-500 bg-white bg-opacity-60 rounded-full px-3 py-1">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>💡 Pro tip: Use descriptive titles like "Starbucks Coffee" for better AI categorization</span>
+      </div>
+    </div>
   </div>
 </div>
+
+<style>
+/* Custom form styling to ensure consistency */
+.form-input, .form-select, .form-textarea {
+  @apply w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none bg-white;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  @apply border-blue-500 ring-2 ring-blue-200 shadow-sm;
+}
+
+.form-textarea {
+  resize: none;
+  min-height: 80px;
+}
+
+/* Responsive adjustments */
+@media (max-height: 700px) {
+  .space-y-4 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  .form-input, .form-select, .form-textarea {
+    @apply py-2;
+  }
+}
+
+/* Enhanced mobile experience */
+@media (max-width: 640px) {
+  .grid-cols-1 {
+    gap: 1rem;
+  }
+}
+</style>
+
+<script>
+// AI Category Prediction (Enhanced with more keywords)
+const categoryKeywords = {
+  'Food & Dining': [
+    'restaurant', 'food', 'meal', 'lunch', 'dinner', 'breakfast', 'brunch',
+    'pizza', 'burger', 'coffee', 'cafe', 'starbucks', 'mcdonald', 'kfc', 'subway',
+    'grocery', 'supermarket', 'walmart', 'target', 'costco', 'whole foods',
+    'snack', 'drink', 'beverage', 'takeout', 'delivery', 'uber eats', 'doordash',
+    'grubhub', 'dine', 'eating', 'kitchen', 'cook', 'recipe', 'ingredients'
+  ],
+  'Transportation': [
+    'gas', 'fuel', 'petrol', 'uber', 'lyft', 'taxi', 'cab', 'bus', 'train',
+    'metro', 'subway', 'parking', 'toll', 'car wash', 'maintenance', 'repair',
+    'oil change', 'tire', 'auto', 'vehicle', 'transport', 'commute', 'travel'
+  ],
+  'Shopping': [
+    'amazon', 'ebay', 'shopping', 'clothes', 'clothing', 'shoes', 'fashion',
+    'electronics', 'gadget', 'phone', 'laptop', 'computer', 'tech',
+    'store', 'mall', 'retail', 'purchase', 'buy', 'order', 'online shopping'
+  ],
+  'Bills & Utilities': [
+    'electric', 'electricity', 'water', 'gas bill', 'internet', 'wifi',
+    'phone bill', 'rent', 'mortgage', 'insurance', 'subscription', 'bill',
+    'netflix', 'spotify', 'utilities', 'payment', 'monthly', 'service'
+  ],
+  'Healthcare': [
+    'doctor', 'hospital', 'pharmacy', 'medicine', 'medical', 'dentist',
+    'clinic', 'health', 'prescription', 'checkup', 'therapy', 'treatment',
+    'surgery', 'dental', 'vision', 'wellness', 'fitness', 'gym'
+  ],
+  'Entertainment': [
+    'movie', 'cinema', 'theater', 'concert', 'show', 'game', 'gaming',
+    'sports', 'entertainment', 'fun', 'hobby', 'recreation', 'streaming',
+    'music', 'book', 'magazine', 'event', 'ticket', 'party'
+  ],
+  'Travel': [
+    'hotel', 'flight', 'airline', 'vacation', 'trip', 'travel', 'booking',
+    'airbnb', 'resort', 'tourism', 'holiday', 'flight', 'airport'
+  ],
+  'Education': [
+    'school', 'college', 'university', 'course', 'book', 'education',
+    'tuition', 'fees', 'study', 'training', 'class', 'learning'
+  ]
+};
+
+function predictCategory(title) {
+  if (!title) return null;
+  
+  const titleLower = title.toLowerCase();
+  let bestCategory = null;
+  let bestScore = 0;
+  
+  for (const [category, keywords] of Object.entries(categoryKeywords)) {
+    let score = 0;
+    for (const keyword of keywords) {
+      if (titleLower.includes(keyword)) {
+        // Exact match gets highest score
+        if (keyword === titleLower) {
+          score += 15;
+        }
+        // Word boundary match gets high score
+        else if (titleLower.includes(' ' + keyword + ' ') || 
+                 titleLower.startsWith(keyword + ' ') || 
+                 titleLower.endsWith(' ' + keyword)) {
+          score += 10;
+        }
+        // Partial match gets medium score
+        else {
+          score += 5;
+        }
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestCategory = category;
+    }
+  }
+  
+  return bestScore > 0 ? bestCategory : null;
+}
+
+// Enhanced real-time category prediction with debouncing
+let predictionTimeout;
+document.addEventListener('DOMContentLoaded', function() {
+  const titleInput = document.querySelector('input[name="title"]');
+  const categoryBanner = document.getElementById('categoryBanner');
+  const predictedCategorySpan = document.getElementById('predictedCategory');
+  const hiddenCategoryInput = document.querySelector('input[name="predicted_category"]');
+  
+  titleInput.addEventListener('input', function() {
+    clearTimeout(predictionTimeout);
+    const title = this.value.trim();
+    
+    predictionTimeout = setTimeout(() => {
+      const category = predictCategory(title);
+      
+      if (category) {
+        predictedCategorySpan.textContent = category;
+        categoryBanner.classList.remove('hidden');
+        if (hiddenCategoryInput) {
+          hiddenCategoryInput.value = category;
+        }
+      } else {
+        categoryBanner.classList.add('hidden');
+        if (hiddenCategoryInput) {
+          hiddenCategoryInput.value = '';
+        }
+      }
+    }, 300); // 300ms delay for better UX
+  });
+  
+  // Auto-focus first field
+  titleInput.focus();
+});
+
+// Enhanced quick expense function
+function quickExpense() {
+  const title = prompt('What did you spend on?');
+  if (title) {
+    const titleInput = document.querySelector('input[name="title"]');
+    titleInput.value = title;
+    titleInput.dispatchEvent(new Event('input'));
+    document.querySelector('input[name="amount"]').focus();
+  }
+}
+
+// Enhanced form validation
+document.getElementById('expenseForm').addEventListener('submit', function(e) {
+  const title = document.querySelector('input[name="title"]').value.trim();
+  const amount = document.querySelector('input[name="amount"]').value;
+  
+  if (!title) {
+    e.preventDefault();
+    showError('Please enter an expense title', 'title');
+    return;
+  }
+  
+  if (!amount || parseFloat(amount) <= 0) {
+    e.preventDefault();
+    showError('Please enter a valid amount greater than 0', 'amount');
+    return;
+  }
+  
+  // Show loading state
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalContent = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Saving...</span>';
+  submitBtn.disabled = true;
+});
+
+function showError(message, fieldName) {
+  alert(message);
+  document.querySelector(`input[name="${fieldName}"]`).focus();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  // Ctrl/Cmd + Enter to submit
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    document.getElementById('expenseForm').submit();
+  }
+  
+  // Escape to cancel
+  if (e.key === 'Escape') {
+    if (confirm('Are you sure you want to cancel? Your changes will be lost.')) {
+      window.history.back();
+    }
+  }
+});
+</script>
 {% endblock %}
