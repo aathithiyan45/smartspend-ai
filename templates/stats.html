@@ -1,113 +1,175 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="text-2xl font-bold mb-6">📊 Expense Statistics</h2>
 
-<!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  <!-- Total Spent -->
-  <div class="bg-indigo-100 p-5 rounded-xl shadow">
-    <h3 class="text-lg font-semibold text-gray-800">💸 Total Spent</h3>
-    <p class="text-3xl font-bold mt-2 text-indigo-700">₹{{ total }}</p>
-  </div>
-
-  <!-- Category Summary -->
-  <div class="bg-green-100 p-5 rounded-xl shadow">
-    <h3 class="text-lg font-semibold text-gray-800">📁 Category Breakdown</h3>
-    <ul class="mt-3 space-y-1 text-sm">
-      {% for cat in categories %}
-        <li>{{ cat.category }}: ₹{{ cat.total }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-
+<!-- Main Container with Gradient Background -->
+<div class="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
   
-  <!-- Updated Monthly Summary Card -->
-<div class="bg-yellow-100 p-5 rounded-xl shadow">
-  <h3 class="text-lg font-semibold text-gray-800">📆 Monthly Overview</h3>
-  
-  {% if latest_month_label %}
-    <p class="text-base mt-3">
-      <strong>Latest:</strong> {{ latest_month_label }} — ₹{{ latest_month_total|floatformat:2 }}
-    </p>
-
-    <p class="text-sm text-gray-700 mt-4 font-semibold">🔝 Top 3 Spending Months:</p>
-    <ul class="mt-2 space-y-1 text-sm">
-      {% for label, total in top3_months %}
-        <li>{{ label }}: ₹{{ total|floatformat:2 }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-sm text-gray-500 mt-3">No monthly data available yet.</p>
-  {% endif %}
-</div>
-
-</div>
-<!-- 📅 Future Expense Prediction -->
-<div class="mt-8 p-6 rounded-xl shadow bg-gradient-to-br from-white via-blue-50 to-blue-100">
-  <h2 class="text-xl font-semibold text-blue-700 mb-3">📅 Next Month Predictions</h2>
-
-  {% if future_predictions %}
-    <ul class="space-y-1 text-gray-800 text-sm">
-      {% for category, amount in future_predictions.items %}
-        <li>🔮 You may spend <strong>₹{{ amount }}</strong> on <strong>{{ category }}</strong> next month.</li>
-      {% endfor %}
-    </ul>
-
-    <canvas id="futureChart" class="mt-5"></canvas>
-    <script>
-      const futureData = {{ future_predictions|safe }};
-      const ctxFuture = document.getElementById("futureChart").getContext("2d");
-
-      new Chart(ctxFuture, {
-        type: 'bar',
-        data: {
-          labels: Object.keys(futureData),
-          datasets: [{
-            label: 'Predicted Spending (₹)',
-            data: Object.values(futureData),
-            backgroundColor: '#60a5fa',
-            borderRadius: 8,
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-    </script>
-  {% else %}
-    <p class="text-gray-500 text-sm">Not enough data to predict future spending.</p>
-  {% endif %}
-</div>
-
-
-<!-- Charts Section -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-  <!-- Category Chart -->
-  <div class="bg-white p-6 shadow-lg rounded-xl">
-    <h3 class="text-center font-semibold mb-3">💼 Category-wise Spending</h3>
-    <canvas id="categoryChart" class="w-full h-64"></canvas>
+  <!-- Page Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">📊 Expense Statistics</h1>
+    <p class="text-gray-600">Comprehensive overview of your spending patterns and predictions</p>
   </div>
 
-  <!-- Monthly Bar Chart -->
-  <div class="bg-white p-6 shadow-lg rounded-xl">
-    <h3 class="text-center font-semibold mb-3">📅 Monthly Spending</h3>
-    <canvas id="monthlyChart" class="w-full h-64"></canvas>
+  <!-- Stats Overview Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    
+    <!-- Total Spent Card -->
+    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">💸 Total Spent</h3>
+          <p class="text-3xl font-bold text-indigo-600">₹{{ total }}</p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown Card -->
+    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">📁 Category Breakdown</h3>
+      <div class="space-y-3 max-h-32 overflow-y-auto">
+        {% for cat in categories %}
+          <div class="flex justify-between items-center py-1">
+            <span class="text-sm text-gray-700 font-medium">{{ cat.category }}</span>
+            <span class="text-sm font-bold text-green-600">₹{{ cat.total }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Monthly Overview Card -->
+    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">📆 Monthly Overview</h3>
+      
+      {% if latest_month_label %}
+        <div class="mb-4">
+          <p class="text-sm text-gray-600">Latest Month</p>
+          <p class="text-lg font-bold text-sky-600">{{ latest_month_label }}</p>
+          <p class="text-xl font-bold text-gray-900">₹{{ latest_month_total|floatformat:2 }}</p>
+        </div>
+
+        <div class="border-t pt-3">
+          <p class="text-sm font-semibold text-gray-700 mb-2">🔝 Top 3 Months</p>
+          <div class="space-y-1">
+            {% for label, total in top3_months %}
+              <div class="flex justify-between text-xs">
+                <span class="text-gray-600">{{ label }}</span>
+                <span class="font-semibold text-gray-800">₹{{ total|floatformat:2 }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p class="text-sm text-gray-500">No monthly data available yet.</p>
+      {% endif %}
+    </div>
   </div>
 
-  <!-- Trend Line Chart -->
-  <div class="col-span-1 md:col-span-2 bg-white p-6 shadow-lg rounded-xl mt-8">
-    <h3 class="text-center font-semibold mb-3">📈 Expense Trend Over Time</h3>
-    <canvas id="trendChart" class="w-full h-64"></canvas>
+  <!-- Future Predictions Section -->
+  <div class="mb-8">
+    <div class="bg-gradient-to-br from-indigo-50 via-white to-sky-50 p-6 rounded-xl shadow-lg border border-indigo-100">
+      <div class="flex items-center mb-4">
+        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-indigo-700">📅 Next Month Predictions</h2>
+      </div>
+
+      {% if future_predictions %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {% for category, amount in future_predictions.items %}
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-700">{{ category }}</span>
+                <span class="text-lg font-bold text-indigo-600">₹{{ amount }}</span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Predicted spending</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <canvas id="futureChart" class="w-full h-64"></canvas>
+        </div>
+      {% else %}
+        <div class="text-center py-8">
+          <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          <p class="text-gray-500">Not enough data to predict future spending</p>
+        </div>
+      {% endif %}
+    </div>
   </div>
+
+  <!-- Charts Section -->
+  <div class="space-y-8">
+    
+    <!-- Category and Monthly Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Category Pie Chart -->
+      <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <div class="flex items-center mb-4">
+          <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">💼 Category-wise Spending</h3>
+        </div>
+        <div class="relative">
+          <canvas id="categoryChart" class="w-full h-80"></canvas>
+        </div>
+      </div>
+
+      <!-- Monthly Bar Chart -->
+      <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <div class="flex items-center mb-4">
+          <div class="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">📅 Monthly Spending</h3>
+        </div>
+        <div class="relative">
+          <canvas id="monthlyChart" class="w-full h-80"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trend Line Chart - Full Width -->
+    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      <div class="flex items-center mb-6">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800">📈 Expense Trend Over Time</h3>
+      </div>
+      <div class="relative">
+        <canvas id="trendChart" class="w-full h-96"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Spacing -->
+  <div class="h-8"></div>
 </div>
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+  // Get data from Django context
   const categoryLabels = {{ category_labels|safe }};
   const categoryTotals = {{ category_totals|safe }};
   const monthLabels = {{ month_labels|safe }};
@@ -115,7 +177,67 @@
   const trendLabels = {{ trend_labels|safe }};
   const trendTotals = {{ trend_totals|safe }};
 
-  // Pie Chart - Category Spending
+  // Chart.js default configuration
+  Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+  Chart.defaults.color = '#374151';
+
+  // Future Predictions Chart
+  {% if future_predictions %}
+  const futureData = {{ future_predictions|safe }};
+  const ctxFuture = document.getElementById("futureChart").getContext("2d");
+  
+  new Chart(ctxFuture, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(futureData),
+      datasets: [{
+        label: 'Predicted Spending (₹)',
+        data: Object.values(futureData),
+        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+        borderColor: '#6366F1',
+        borderWidth: 1,
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          borderColor: '#6366F1',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            callback: function(value) {
+              return '₹' + value;
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+  {% endif %}
+
+  // Category Pie Chart
   new Chart(document.getElementById("categoryChart"), {
     type: 'pie',
     data: {
@@ -124,19 +246,43 @@
         data: categoryTotals,
         backgroundColor: [
           "#6366F1", "#F59E0B", "#10B981", "#EF4444", "#3B82F6",
-          "#8B5CF6", "#EC4899", "#FBBF24", "#22D3EE", "#14B8A6"
+          "#8B5CF6", "#EC4899", "#FBBF24", "#22D3EE", "#14B8A6",
+          "#F97316", "#84CC16", "#06B6D4", "#8B5A2B", "#DC2626"
         ],
         borderColor: "#fff",
-        borderWidth: 2
+        borderWidth: 3,
+        hoverBorderWidth: 4
       }]
     },
     options: {
       responsive: true,
-      plugins: { legend: { position: 'bottom' } }
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true,
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ₹' + context.parsed;
+            }
+          }
+        }
+      }
     }
   });
 
-  // Bar Chart - Monthly Spending
+  // Monthly Bar Chart
   new Chart(document.getElementById("monthlyChart"), {
     type: 'bar',
     data: {
@@ -144,17 +290,53 @@
       datasets: [{
         label: "Monthly Spending",
         data: monthTotals,
-        backgroundColor: "#60A5FA"
+        backgroundColor: 'rgba(96, 165, 250, 0.8)',
+        borderColor: '#60A5FA',
+        borderWidth: 1,
+        borderRadius: 8,
+        borderSkipped: false,
       }]
     },
     options: {
       responsive: true,
-      scales: { y: { beginAtZero: true } },
-      plugins: { legend: { display: false } }
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          callbacks: {
+            label: function(context) {
+              return 'Spent: ₹' + context.parsed.y;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            callback: function(value) {
+              return '₹' + value;
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
     }
   });
 
-  // Line Chart - Expense Trend
+  // Trend Line Chart
   new Chart(document.getElementById("trendChart"), {
     type: 'line',
     data: {
@@ -162,21 +344,72 @@
       datasets: [{
         label: "Daily Spending Trend",
         data: trendTotals,
-        fill: false,
+        fill: true,
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
         borderColor: "#10B981",
-        tension: 0.3
+        borderWidth: 3,
+        pointBackgroundColor: "#10B981",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.4
       }]
     },
     options: {
       responsive: true,
-      scales: {
-        y: { beginAtZero: true },
-        x: { title: { display: true, text: "Date" } }
-      },
+      maintainAspectRatio: false,
       plugins: {
-        legend: { display: true, position: 'top' }
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            usePointStyle: true,
+            padding: 20
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          callbacks: {
+            label: function(context) {
+              return 'Spent: ₹' + context.parsed.y;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            callback: function(value) {
+              return '₹' + value;
+            }
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          title: {
+            display: true,
+            text: "Date",
+            font: {
+              weight: 'bold'
+            }
+          }
+        }
+      },
+      interaction: {
+        intersect: false,
+        mode: 'index'
       }
     }
   });
 </script>
+
 {% endblock %}
