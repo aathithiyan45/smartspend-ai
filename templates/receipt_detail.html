@@ -1,6 +1,33 @@
 {% extends 'base.html' %}
+
 {% block content %}
-  <h2>Receipt Details</h2>
-  <img src="{{ receipt.image.url }}" width="300" />
-  <pre>{{ receipt.extracted_data|safe }}</pre>
+<!-- Page Container -->
+<div class="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 flex items-center justify-center p-6">
+  <div class="w-full max-w-3xl bg-white/60 backdrop-blur-lg border border-white/30 shadow-2xl rounded-3xl p-10">
+
+    <!-- Page Header -->
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-extrabold text-gray-800 font-['Inter'] mb-2">🧾 Receipt Details</h2>
+      <p class="text-gray-600 font-medium font-['Inter']">Scanned receipt preview and extracted information</p>
+    </div>
+
+    <!-- Receipt Image -->
+    <div class="flex justify-center mb-6">
+      <img src="{{ receipt.image.url }}" alt="Uploaded Receipt" class="rounded-xl shadow-lg max-h-[400px] object-contain border border-gray-200" />
+    </div>
+
+    <!-- Extracted Data -->
+    <div class="bg-white/70 p-6 rounded-xl shadow-inner font-mono text-sm text-gray-700 whitespace-pre-wrap">
+      {{ receipt.extracted_data|safe }}
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-8 text-center">
+      <a href="{% url 'home' %}" 
+         class="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md hover:shadow-xl transition duration-200 transform hover:scale-105">
+        ⬅️ Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
 {% endblock %}

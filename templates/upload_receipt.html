@@ -1,9 +1,84 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2>Upload Receipt</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
-  </form>
+
+<!-- Page Container -->
+<div class="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 flex items-center justify-center p-6">
+  <div class="w-full max-w-xl bg-white/60 backdrop-blur-lg border border-white/30 shadow-2xl rounded-3xl p-10">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-extrabold text-gray-800 font-['Inter'] mb-2">📤 Upload Receipt</h2>
+      <p class="text-gray-600 font-medium">Scan receipts and extract data using AI</p>
+    </div>
+
+    <!-- Upload Form -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-6 font-['Inter']">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <!-- Submit Button -->
+      <div class="flex justify-center">
+        <button type="submit"
+          class="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md hover:shadow-xl transition duration-200 transform hover:scale-105">
+          🧾 Upload & Scan
+        </button>
+      </div>
+    </form>
+
+    <!-- Back Button -->
+    <div class="text-center mt-6">
+      <a href="{% url 'home' %}"
+        class="text-sm text-gray-500 hover:underline hover:text-indigo-600 transition">
+        ← Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Optional: Better Input Styling -->
+<style>
+  input[type="file"],
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    background-color: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
+    transition: all 0.2s ease;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: #6366f1;
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+</style>
+
 {% endblock %}

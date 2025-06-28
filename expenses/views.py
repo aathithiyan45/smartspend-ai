@@ -310,49 +310,70 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import Expense
 from utils.nlp_parser import extract_query_data
+from django.db.models import Q
+import datetime
 
 
 @login_required
 def smart_search(request):
-    query = request.GET.get('q', '').strip()
-    
-    # Parse the query using your custom NLP function
-    parsed = extract_query_data(query)
-    
-    # Start with all expenses of the user
+    query = request.GET.get('query', '').strip()
     expenses = Expense.objects.filter(user=request.user)
+    parsed = {}
 
-    # 🔍 Filter by category if available
-    if parsed.get('category'):
-        expenses = expenses.filter(category__iexact=parsed['category'])
+    if query:
+        try:
+            parsed = extract_query_data(query)
 
-    # 📅 Filter by date range if both start and end are present
-    start_date = parsed.get('start_date')
-    end_date = parsed.get('end_date')
-    if start_date and end_date:
-        expenses = expenses.filter(date__range=(start_date, end_date))
+            # 🎯 Filter by category (case-insensitive, partial match support)
+            category = parsed.get('category')
+            if category:
+                expenses = expenses.filter(category__icontains=category)
 
-    # 🧾 Order by most recent first
+            # 🗓️ Filter by date range
+            start_date = parsed.get('start_date')
+            end_date = parsed.get('end_date')
+
+            if start_date and end_date:
+                expenses = expenses.filter(date__range=(start_date, end_date))
+            elif start_date:
+                expenses = expenses.filter(date__gte=start_date)
+            elif end_date:
+                expenses = expenses.filter(date__lte=end_date)
+
+            # 💬 Optional keyword search on title or description
+            keywords = parsed.get('keywords')
+            if keywords:
+                for word in keywords.split():
+                    expenses = expenses.filter(Q(title__icontains=word) | Q(description__icontains=word))
+
+        except Exception as e:
+            print("⚠️ NLP parse failed:", e)
+            # Optional: You can show an error on UI via context['error'] = "..."
+
+    # 📌 Always sort by most recent first
     expenses = expenses.order_by('-date')
 
     context = {
         'expenses': expenses,
         'query': query,
-        'parsed': parsed,  # Optional: show extracted info for debugging
+        'parsed': parsed,
+        'results_count': expenses.count(),
     }
 
     return render(request, 'smart_search_results.html', context)
 
 import re
 import logging
+from datetime import datetime, date
 import pytesseract
 from PIL import Image
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ReceiptUploadForm
-from .models import ReceiptUpload
+from .models import ReceiptUpload, Expense
 
 logger = logging.getLogger(__name__)
 
+# 🔍 Predict category from text
 def predict_category(text):
     text = text.lower()
     if any(word in text for word in ['petrol', 'fuel', 'diesel', 'shell']):
@@ -363,10 +384,15 @@ def predict_category(text):
         return 'Groceries'
     elif any(word in text for word in ['book', 'course', 'tuition']):
         return 'Education'
+    elif any(word in text for word in ['consultation', 'hospital', 'clinic', 'pharmacy']):
+        return 'Healthcare'
     return 'Other'
 
+# 🧾 Extract receipt info
 def extract_receipt_info(text):
     text = text.replace('\r\n', '\n')
+
+    # 💰 Amount extraction
     amount_match = re.findall(r'(?:[\₹\$]?\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', text)
     amounts = []
     for amt in amount_match:
@@ -375,21 +401,41 @@ def extract_receipt_info(text):
             amounts.append(float(cleaned))
         except:
             pass
-    total_amount = max(amounts) if amounts else "N/A"
+    total_amount = max(amounts) if amounts else None
+
+    # 📅 Date extraction
     date_match = re.findall(r'\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}', text)
-    date = date_match[0] if date_match else "N/A"
+    date_obj = None
+    if date_match:
+        raw_date = date_match[0].replace("\u201c", '').replace("\u201d", '')
+        for fmt in ("%Y-%m-%d", "%d/%m/%Y"):
+            try:
+                date_obj = datetime.strptime(raw_date, fmt).date()
+                break
+            except ValueError:
+                continue
+
+    # 🏷️ Title extraction
     lines = text.strip().split('\n')
-    title = next((line for line in lines if line.strip() and not any(k in line.lower() for k in ['bill', 'date', 'invoice'])), "N/A")
+    
+    title = next((line.strip() for line in lines if line.strip() and not any(k in line.lower() for k in ['bill', 'date', 'invoice'])), None)
+    if not title:
+        title = "Untitled Receipt"
+    
+
+    # 🗂️ Category prediction
     category = predict_category(text)
+
     return {
         "title": title,
         "amount": total_amount,
-        "date": date,
+        "date": date_obj,
         "category": category,
         "raw_text": text
     }
 
 
+# 📤 Upload and process receipt
 def upload_receipt(request):
     if request.method == 'POST':
         form = ReceiptUploadForm(request.POST, request.FILES)
@@ -398,39 +444,50 @@ def upload_receipt(request):
             receipt.user = request.user
 
             try:
-                # OCR text extraction
+                # 🧠 OCR extraction
                 img = Image.open(receipt.image)
                 text = pytesseract.image_to_string(img)
-                logger.info(f"OCR Text: {text}")
+                logger.info("🔍 OCR Extracted Text:\n%s", text)
 
-                # Parse and save extracted data
+                # 📦 Extract receipt data
                 extracted = extract_receipt_info(text)
+
+                # ✅ Serialize date for JSONField
+                if isinstance(extracted.get("date"), (datetime, date)):
+                    extracted["date"] = extracted["date"].isoformat()
+
                 receipt.extracted_data = extracted
                 receipt.save()
 
-                # Auto-create Expense from extracted data
-                if extracted['amount'] != "N/A" and extracted['title'] != "N/A" and extracted['date'] != "N/A":
-                    Expense.objects.create(
-                        user=request.user,
-                        title=extracted['title'],
-                        amount=extracted['amount'],
-                        category=extracted['category'],
-                        date=extracted['date'],  # should be a string like '2025-06-10'
-                        payment_method='cash',   # default, or you can let user choose later
-                        notes='Imported via OCR'
-                    )
-                    logger.info("Expense created from receipt data.")
+                # ✅ Deserialize for Expense model
+                if all([extracted.get("title"), extracted.get("amount"), extracted.get("date")]):
+                    try:
+                        date_obj = datetime.strptime(extracted["date"], "%Y-%m-%d").date()
+
+                        Expense.objects.create(
+                            user=request.user,
+                            title=extracted["title"],
+                            amount=extracted["amount"],
+                            category=extracted["category"],
+                            date=date_obj,
+                            payment_method='cash',
+                            notes='Imported via OCR'
+                        )
+                        logger.info("✅ Expense created from receipt.")
+                    except Exception as date_err:
+                        logger.error(f"❌ Failed to parse date: {date_err}")
 
                 return redirect('receipt_detail', receipt_id=receipt.id)
 
             except Exception as e:
-                logger.error(f"Error processing receipt: {e}")
+                logger.error(f"❌ Error processing receipt: {e}")
                 form.add_error(None, "Failed to process receipt image. Please try another image.")
     else:
         form = ReceiptUploadForm()
 
     return render(request, 'upload_receipt.html', {'form': form})
 
+# 📄 View receipt details
 def receipt_detail(request, receipt_id):
     receipt = get_object_or_404(ReceiptUpload, id=receipt_id, user=request.user)
     return render(request, 'receipt_detail.html', {'receipt': receipt})

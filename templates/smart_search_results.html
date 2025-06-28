@@ -1,21 +1,69 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-3xl mx-auto p-6 bg-white rounded shadow">
-  <h2 class="text-xl font-bold mb-4">🔍 Search Results for: "{{ query }}"</h2>
 
-  {% if expenses %}
-    <ul class="space-y-4">
-      {% for expense in expenses %}
-        <li class="border p-4 rounded shadow-sm">
-          <p><strong>Title:</strong> {{ expense.title }}</p>
-          <p><strong>Category:</strong> {{ expense.category }}</p>
-          <p><strong>Amount:</strong> ₹{{ expense.amount }}</p>
-          <p><strong>Date:</strong> {{ expense.date }}</p>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-gray-600 mt-4">No expenses found matching your search.</p>
-  {% endif %}
+<!-- Container -->
+<div class="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6 animate-fadeInUp">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-1">🔎 Smart Search Results</h1>
+    {% if query %}
+      <p class="text-gray-600">Showing results for: <span class="font-medium text-gray-800">"{{ query }}"</span></p>
+    {% endif %}
+  </div>
+
+  <!-- Search Summary -->
+  <div class="bg-white/80 backdrop-blur rounded-2xl border border-white/30 shadow-md p-4 mb-6">
+    <p class="text-sm text-gray-700">
+      {% if results_count == 0 %}
+        No expenses matched your query.
+      {% else %}
+        Found <span class="font-semibold">{{ results_count }}</span> matching expense{{ results_count|pluralize }}.
+      {% endif %}
+    </p>
+
+    {% if parsed %}
+      <div class="text-sm text-gray-500 mt-2">
+        <p><strong>Extracted Info:</strong></p>
+        <ul class="list-disc list-inside ml-2">
+          {% if parsed.category %}<li>Category: {{ parsed.category }}</li>{% endif %}
+          {% if parsed.start_date %}<li>From: {{ parsed.start_date }}</li>{% endif %}
+          {% if parsed.end_date %}<li>To: {{ parsed.end_date }}</li>{% endif %}
+          {% if parsed.keywords %}<li>Keywords: {{ parsed.keywords }}</li>{% endif %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Expenses List -->
+  <div class="space-y-4">
+    {% for expense in expenses %}
+      <div class="bg-white/70 backdrop-blur rounded-xl shadow p-4 flex justify-between items-center border border-gray-200">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">{{ expense.title }}</h3>
+          
+          
+          
+          <p class="text-sm text-gray-500 mt-1">Category: <span class="font-medium">{{ expense.category }}</span></p>
+        </div>
+        <div class="text-right">
+          <p class="text-lg font-bold text-emerald-600">₹{{ expense.amount }}</p>
+          <p class="text-xs text-gray-500">{{ expense.date }}</p>
+        </div>
+      </div>
+    {% empty %}
+      <div class="bg-red-100 text-red-600 p-4 rounded-xl">
+        😕 No expenses found. Try refining your search.
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Back Button -->
+  <div class="mt-8">
+    <a href="{% url 'home' %}" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-medium shadow transition-all duration-200">
+      ← Back to Dashboard
+    </a>
+  </div>
+
 </div>
 {% endblock %}
