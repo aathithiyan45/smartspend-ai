@@ -98,29 +98,6 @@ python manage.py migrate
 # Start the server
 python manage.py runserver
 
-📁 Project Structure
-SmartSpend.AI/
-│── expenses/        # Core expense app
-│── dashboard/       # Visualization & analytics
-│── ai_model/        # Model training & prediction utilities
-│── templates/       # HTML templates
-│── static/          # Tailwind, JS, charts, assets
-│── screenshots/     # Project images
-│── manage.py
-└── README.md
-
-📌 Roadmap / Future Enhancements
-
-🔐 User authentication & multi-user support
-
-📱 Mobile app version (React Native / Flutter)
-
-🎯 Budget recommendations with AI
-
-🔔 Smart alerts for over-spending
-
-☁️ Cloud deployment (AWS / Render / Railway)
-
 🤝 Contributing
 
 Contributions are welcome!
