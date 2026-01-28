@@ -1,5 +1,5 @@
 SmartSpend.AI – AI-Powered Personal Expense Tracker
-
+  
 SmartSpend.AI is an intelligent, modern expense-tracking web application built with Django and Tailwind CSS.
 It helps users track expenses, manage budgets, analyze spending trends, and leverages AI/ML to automatically predict expense categories — making money management faster and smarter.
 
