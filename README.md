@@ -6,7 +6,7 @@ It helps users track expenses, manage budgets, analyze spending trends, and leve
 ✨ Features
 🔹 Core Expense Management
 
-➕ Add new expenses
+➕ Add new expenses   
 
 ✏️ Edit and update existing entries
 
