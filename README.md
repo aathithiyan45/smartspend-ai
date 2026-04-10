@@ -9,7 +9,7 @@ It allows users to track expenses, manage budgets, analyze spending trends, and 
 ## Features
 
 ### Core Expense Management
-- Add new expenses  
+- Add new expense 
 - Edit and update existing entries  
 - Delete expenses  
 - Filter expenses by date range  
